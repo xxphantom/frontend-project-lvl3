@@ -1,6 +1,6 @@
-import _ from 'lodash';
+import double from '../src/double.js';
 
 test('Example test', () => {
-  const result = _.join(['I', 'Love', 'Hexlet!'], ' ');
-  expect('I Love Hexlet!').toBe(result);
+  const result = 4;
+  expect(double(2)).toBe(result);
 });

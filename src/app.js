@@ -6,6 +6,7 @@ import initView from './view.js';
 
 const app = () => {
   const elements = {
+    formBox: document.querySelector('div.col-md-8'),
     form: document.querySelector('form.rss-form'),
     input: document.querySelector('input.form-control'),
   };
@@ -13,6 +14,7 @@ const app = () => {
   const state = {
     form: {
       status: 'filling',
+      url: null,
     },
   };
 
@@ -34,6 +36,13 @@ const app = () => {
   elements.input.addEventListener('change', (e) => {
     const url = e.currentTarget.value;
     validateInput(url);
+  });
+  elements.form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (state.form.status === 'invalid') {
+      return;
+    }
+    console.log('test');
   });
 };
 export default app;

@@ -1,29 +1,56 @@
 import onChange from 'on-change';
 
-const buildDangerElement = () => {
+const buildFeedbackElement = (textFeedback, feedbackClass) => {
   const divEl = document.createElement('div');
-  divEl.classList.add('feedback', 'text-danger');
-  divEl.textContent = 'Проверьте корректность ввода URL';
+  divEl.classList.add('feedback', feedbackClass);
+  divEl.textContent = textFeedback;
   return divEl;
 };
 const initView = (state, elements) => {
+  const renderFeedback = (textFeedback, feedbackClass) => {
+    const oldFeedbackEl = document.querySelector(`.${feedbackClass}`);
+    if (oldFeedbackEl) {
+      oldFeedbackEl.remove();
+    }
+    if (!textFeedback) {
+      return;
+    }
+    const errorEl = buildFeedbackElement(textFeedback, feedbackClass);
+    elements.formBox.append(errorEl);
+  };
+
   const renderInput = (status) => {
-    if (status === 'invalid') {
-      elements.input.classList.add('is-invalid');
-      const dangerEl = buildDangerElement();
-      elements.formBox.append(dangerEl);
-    } else {
-      elements.input.classList.remove('is-invalid');
-      elements.formBox.lastChild.remove();
+    switch (status) {
+      case 'filling':
+        elements.input.classList.remove('is-invalid');
+        break;
+      case 'invalid':
+        elements.input.classList.add('is-invalid');
+        elements.input.removeAttribute('disabled');
+        elements.button.removeAttribute('disabled');
+        break;
+      case 'downloading':
+        elements.input.setAttribute('disabled', true);
+        elements.button.setAttribute('disabled', true);
+        break;
+      case 'success':
+        renderFeedback('RSS успешно загружен!', 'text-success');
+        elements.input.removeAttribute('disabled');
+        elements.button.removeAttribute('disabled');
+        elements.form.reset();
+        break;
+      default:
+        throw Error(`Unknown form status ${status}`);
     }
   };
 
   const mapping = {
-    'form.status': renderInput,
+    'form.status': () => renderInput(state.form.status),
+    'form.error': () => renderFeedback(state.form.error, 'text-danger'),
   };
 
-  const watched = onChange(state, (path, value) => {
-    mapping[path](value);
+  const watched = onChange(state, (path) => {
+    mapping[path]();
   });
   return watched;
 };

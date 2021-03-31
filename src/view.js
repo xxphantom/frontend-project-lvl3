@@ -88,6 +88,7 @@ const initView = (state, elements) => {
     postEl.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start');
     const linkEl = document.createElement('a');
     linkEl.setAttribute('href', link);
+    linkEl.classList.add('font-weight-bold');
     linkEl.textContent = title;
     const postButton = document.createElement('button');
     postButton.setAttribute('type', 'button');
@@ -108,7 +109,7 @@ const initView = (state, elements) => {
     postsBox.append(postsList);
     posts.forEach((post) => {
       const postEl = renderPostEl(post.title, post.description, post.link);
-      postsList.prepend(postEl);
+      postsList.append(postEl);
     });
   };
 

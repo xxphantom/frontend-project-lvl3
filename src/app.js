@@ -1,6 +1,6 @@
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-// import _ from 'lodash';
+import _ from 'lodash';
 import * as yup from 'yup';
 import axios from 'axios';
 import initView from './view.js';
@@ -9,6 +9,8 @@ const app = () => {
   const serverOrigins = 'https://hexlet-allorigins.herokuapp.com/get?url=';
   const elements = {
     formBox: document.querySelector('div.col-md-8'),
+    feedsBox: document.querySelector('div.feeds'),
+    postsBox: document.querySelector('div.posts'),
     form: document.querySelector('form.rss-form'),
     input: document.querySelector('input.form-control'),
     button: document.querySelector('button.btn-primary'),
@@ -19,7 +21,10 @@ const app = () => {
       status: 'filling',
       url: null,
       error: null,
+      feedback: null,
     },
+    feeds: [],
+    posts: [],
   };
 
   const watched = initView(state, elements);
@@ -38,32 +43,30 @@ const app = () => {
   const rssParser = (xmlString) => {
     const parser = new DOMParser();
     const dom = parser.parseFromString(xmlString, 'text/xml');
-    const titleEl = dom.querySelector('channel > title');
-    const descriptionEl = dom.querySelector('channel > description');
+    const channelEl = dom.querySelector('channel');
     const postsEls = [...dom.querySelectorAll('item')];
-
-    if (!titleEl || !descriptionEl || postsEls.length === 0) {
-      throw new Error('Некорректный формат RSS - проверьте источник');
+    if (!channelEl) {
+      throw Error('Ресурс не содержит валидный RSS');
     }
+    const propsWhiteList = ['title', 'description', 'link', 'guid'];
 
-    const posts = postsEls.map((item) => {
-      const title = item.querySelector('title').textContent;
-      const description = item.querySelector('description').textContent;
-      const url = item.querySelector('link').textContent;
-      const id = item.querySelector('guid').textContent;
-      const post = {
-        title, description, url, id,
-      };
-      return post;
-    });
-
-    const parsedData = {
-      channelTitle: titleEl.textContent,
-      channelDescription: descriptionEl.textContent,
-      posts,
+    const domEltoObj = (el) => {
+      const obj = propsWhiteList.reduce((acc, propName) => {
+        if (el.querySelector(`${el.tagName} > ${propName}`) !== null) {
+          acc[propName] = el.querySelector(propName).textContent;
+        }
+        return acc;
+      }, {});
+      return obj;
     };
 
-    return parsedData;
+    const channelProps = domEltoObj(channelEl);
+    const posts = postsEls.map(domEltoObj);
+
+    return {
+      ...channelProps,
+      posts,
+    };
   };
 
   elements.input.addEventListener('change', (e) => {
@@ -79,28 +82,43 @@ const app = () => {
   });
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const url = elements.input.value.trim();
+    const feedSourceURL = elements.input.value.trim();
     if (state.form.status === 'invalid') {
       return;
     }
+    const double = watched.feeds.find((feed) => feed.feedSourceURL === feedSourceURL);
+    if (double) {
+      watched.form.status = 'invalid';
+      watched.form.error = 'Данный источник уже добавлен в список фидов';
+      return;
+    }
     watched.form.status = 'downloading';
-    const rssURL = `${serverOrigins}${encodeURIComponent(url)}`;
+    const queryURL = `${serverOrigins}${encodeURIComponent(feedSourceURL)}`;
 
-    axios.get(rssURL)
+    axios.get(queryURL)
       .then((response) => {
         const xmlString = response.data.contents;
         try {
-          const channelData = rssParser(xmlString);
-          console.dir(channelData);
+          const feedId = _.uniqueId();
+          const feedData = rssParser(xmlString);
+          watched.feeds = [...watched.feeds, {
+            feedSourceURL,
+            feedId,
+            title: feedData.title,
+            description: feedData.description,
+          }];
+          watched.posts = [...watched.posts,
+            ...feedData.posts.map((post) => ({ ...post, feedId }))];
           watched.form.status = 'success';
+          watched.form.feedback = 'RSS успешно загружен!';
         } catch (err) {
           watched.form.status = 'parseFailed';
           watched.form.error = err.message;
         }
       })
-      .catch(() => {
+      .catch((err) => {
         watched.form.status = 'failed';
-        watched.form.error = 'Похоже, возникли проблемы с сетью';
+        watched.form.error = err.message;
       });
   });
 };

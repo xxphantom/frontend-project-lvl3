@@ -1,7 +1,7 @@
 import i18next from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import eng from '../assets/locales/en.js';
-import rus from '../assets/locales/ru.js';
+import eng from '../locales/en.js';
+import rus from '../locales/ru.js';
 
 const localize = () => {
   i18next.use(LanguageDetector)

@@ -4,6 +4,7 @@ import _ from 'lodash';
 import * as yup from 'yup';
 import axios from 'axios';
 import initView from './view.js';
+import localize from './localize.js';
 
 const app = () => {
   const serverOrigins = 'https://hexlet-allorigins.herokuapp.com/get?url=';
@@ -20,6 +21,8 @@ const app = () => {
       link: document.querySelector('a.full-article'),
     },
   };
+
+  localize();
 
   const state = {
     preview: {

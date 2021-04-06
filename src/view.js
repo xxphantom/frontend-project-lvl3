@@ -1,4 +1,5 @@
 import onChange from 'on-change';
+import i18next from 'i18next';
 import _ from 'lodash';
 
 const buildFeedbackElement = (textFeedback, feedbackClass) => {

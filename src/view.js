@@ -1,4 +1,5 @@
 import onChange from 'on-change';
+import _ from 'lodash';
 
 const buildFeedbackElement = (textFeedback, feedbackClass) => {
   const divEl = document.createElement('div');
@@ -94,6 +95,7 @@ const initView = (state, elements) => {
     postEl.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start');
     const linkEl = document.createElement('a');
     linkEl.setAttribute('href', link);
+    linkEl.setAttribute('target', '_blank');
     linkEl.classList.add('font-weight-bold');
     linkEl.textContent = title;
     const postButton = document.createElement('button');
@@ -110,6 +112,12 @@ const initView = (state, elements) => {
 
   const renderPosts = (posts) => {
     postsBox.innerHTML = '';
+    postsBox.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A') {
+        e.target.classList.remove('font-weight-bold');
+        e.target.classList.add('font-weight-normal');
+      }
+    });
     const caption = document.createElement('h2');
     caption.textContent = 'Посты';
     postsBox.prepend(caption);
@@ -127,7 +135,14 @@ const initView = (state, elements) => {
     const { title, description, link } = modalEls;
     const postData = posts.find((post) => post.guid === preview.postId);
     title.textContent = postData.title;
-    description.textContent = postData.description;
+    const tempContainer = document.createElement('div');
+    tempContainer.innerHTML = postData.description;
+    const descriptionWithouTags = tempContainer.textContent;
+    const smallDescription = _.truncate(descriptionWithouTags, {
+      length: 500,
+      separator: ' ',
+    });
+    description.textContent = smallDescription;
     link.setAttribute('href', postData.link);
   };
 

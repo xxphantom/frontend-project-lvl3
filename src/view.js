@@ -14,6 +14,7 @@ const initView = (state, elements) => {
     formBox,
     feedsBox,
     postsBox,
+    modalEls,
   } = elements;
 
   const renderFeedback = (textFeedback, feedbackClass) => {
@@ -83,7 +84,12 @@ const initView = (state, elements) => {
     });
   };
 
-  const renderPostEl = (title, description, link) => {
+  const renderPostEl = (post) => {
+    const {
+      title,
+      link,
+      guid,
+    } = post;
     const postEl = document.createElement('li');
     postEl.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start');
     const linkEl = document.createElement('a');
@@ -92,6 +98,9 @@ const initView = (state, elements) => {
     linkEl.textContent = title;
     const postButton = document.createElement('button');
     postButton.setAttribute('type', 'button');
+    postButton.setAttribute('data-id', guid);
+    postButton.setAttribute('data-toggle', 'modal');
+    postButton.setAttribute('data-target', '#modal');
     postButton.classList.add('btn', 'btn-primary', 'btn-sm');
     postButton.textContent = 'Просмотр';
     postEl.append(linkEl);
@@ -108,9 +117,18 @@ const initView = (state, elements) => {
     postsList.classList.add('list-group');
     postsBox.append(postsList);
     posts.forEach((post) => {
-      const postEl = renderPostEl(post.title, post.description, post.link);
+      const postEl = renderPostEl(post);
       postsList.append(postEl);
     });
+  };
+
+  const renderModal = () => {
+    const { preview, posts } = state;
+    const { title, description, link } = modalEls;
+    const postData = posts.find((post) => post.guid === preview.postId);
+    title.textContent = postData.title;
+    description.textContent = postData.description;
+    link.setAttribute('href', postData.link);
   };
 
   const mapping = {
@@ -119,6 +137,7 @@ const initView = (state, elements) => {
     'form.feedback': () => renderFeedback(state.form.feedback, 'text-success'),
     feeds: () => renderFeeds(state.feeds),
     posts: () => renderPosts(state.posts),
+    'preview.postId': () => renderModal(state),
   };
 
   const watched = onChange(state, (path) => {

@@ -14,9 +14,17 @@ const app = () => {
     form: document.querySelector('form.rss-form'),
     input: document.querySelector('input.form-control'),
     button: document.querySelector('button.btn-primary'),
+    modalEls: {
+      title: document.querySelector('h5.modal-title'),
+      description: document.querySelector('div.modal-body'),
+      link: document.querySelector('a.full-article'),
+    },
   };
 
   const state = {
+    preview: {
+      postId: null,
+    },
     form: {
       status: 'filling',
       url: null,
@@ -69,6 +77,10 @@ const app = () => {
     };
   };
 
+  elements.postsBox.addEventListener('click', (e) => {
+    watched.preview.postId = e.target.dataset.id;
+  });
+
   elements.input.addEventListener('change', (e) => {
     const url = e.currentTarget.value;
     const error = validateURL(url);
@@ -80,6 +92,7 @@ const app = () => {
       watched.form.error = 'Проверьте корректность ввода URL';
     }
   });
+
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
     const feedSourceURL = elements.input.value.trim();

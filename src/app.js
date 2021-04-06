@@ -78,7 +78,9 @@ const app = () => {
   };
 
   elements.postsBox.addEventListener('click', (e) => {
-    watched.preview.postId = e.target.dataset.id;
+    if (e.target.tagName === 'BUTTON') {
+      watched.preview.postId = e.target.dataset.id;
+    }
   });
 
   elements.input.addEventListener('change', (e) => {

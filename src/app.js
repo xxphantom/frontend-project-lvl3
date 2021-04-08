@@ -4,7 +4,7 @@ import _ from 'lodash';
 import * as yup from 'yup';
 import axios from 'axios';
 import initView from './view.js';
-import localize from './localize.js';
+import rssParser from './rssParser';
 
 const app = () => {
   const serverOrigins = 'https://hexlet-allorigins.herokuapp.com/get?url=';
@@ -22,8 +22,6 @@ const app = () => {
     },
   };
 
-  localize();
-
   const state = {
     preview: {
       postId: null,
@@ -40,6 +38,11 @@ const app = () => {
 
   const watched = initView(state, elements);
 
+  yup.setLocale({
+    string: {
+      url: 'errors.badURL',
+    },
+  });
   const schema = yup.string().trim().url();
 
   const validateURL = (url) => {
@@ -49,35 +52,6 @@ const app = () => {
     } catch (err) {
       return err;
     }
-  };
-
-  const rssParser = (xmlString) => {
-    const parser = new DOMParser();
-    const dom = parser.parseFromString(xmlString, 'text/xml');
-    const channelEl = dom.querySelector('channel');
-    const postsEls = [...dom.querySelectorAll('item')];
-    if (!channelEl) {
-      throw Error('Ресурс не содержит валидный RSS');
-    }
-    const propsWhiteList = ['title', 'description', 'link', 'guid'];
-
-    const domEltoObj = (el) => {
-      const obj = propsWhiteList.reduce((acc, propName) => {
-        if (el.querySelector(`${el.tagName} > ${propName}`) !== null) {
-          acc[propName] = el.querySelector(propName).textContent;
-        }
-        return acc;
-      }, {});
-      return obj;
-    };
-
-    const channelProps = domEltoObj(channelEl);
-    const posts = postsEls.map(domEltoObj);
-
-    return {
-      ...channelProps,
-      posts,
-    };
   };
 
   elements.postsBox.addEventListener('click', (e) => {
@@ -94,7 +68,7 @@ const app = () => {
       watched.form.error = null;
     } else {
       watched.form.status = 'invalid';
-      watched.form.error = 'Проверьте корректность ввода URL';
+      watched.form.error = error.message;
     }
   });
 
@@ -107,7 +81,7 @@ const app = () => {
     const double = watched.feeds.find((feed) => feed.feedSourceURL === feedSourceURL);
     if (double) {
       watched.form.status = 'invalid';
-      watched.form.error = 'Данный источник уже добавлен в список фидов';
+      watched.form.error = 'errors.addedAlready';
       return;
     }
     watched.form.status = 'downloading';
@@ -128,7 +102,7 @@ const app = () => {
           watched.posts = [...watched.posts,
             ...feedData.posts.map((post) => ({ ...post, feedId }))];
           watched.form.status = 'success';
-          watched.form.feedback = 'RSS успешно загружен!';
+          watched.form.feedback = 'feedback.success';
         } catch (err) {
           watched.form.status = 'parseFailed';
           watched.form.error = err.message;

@@ -1,5 +1,7 @@
 import onChange from 'on-change';
 import _ from 'lodash';
+import localize from './localize';
+import localizeTemplate from './localize/template.js';
 
 const buildFeedbackElement = (textFeedback, feedbackClass) => {
   const divEl = document.createElement('div');
@@ -18,14 +20,18 @@ const initView = (state, elements) => {
     modalEls,
   } = elements;
 
-  const renderFeedback = (textFeedback, feedbackClass) => {
+  const i18next = localize();
+  localizeTemplate(i18next);
+
+  const renderFeedback = (feedBackKey, feedbackClass) => {
     const oldFeedbackEl = document.querySelector('.feedback');
     if (oldFeedbackEl) {
       oldFeedbackEl.remove();
     }
-    if (!textFeedback) {
+    if (!feedBackKey) {
       return;
     }
+    const textFeedback = i18next.t(feedBackKey);
     const errorEl = buildFeedbackElement(textFeedback, feedbackClass);
     formBox.append(errorEl);
   };
@@ -74,7 +80,7 @@ const initView = (state, elements) => {
   const renderFeeds = (feeds) => {
     feedsBox.innerHTML = '';
     const caption = document.createElement('h2');
-    caption.textContent = 'Фиды';
+    caption.textContent = i18next.t('feedsTitle');
     feedsBox.prepend(caption);
     const feedsList = document.createElement('ul');
     feedsList.classList.add('list-group', 'mb-5');
@@ -104,7 +110,7 @@ const initView = (state, elements) => {
     postButton.setAttribute('data-toggle', 'modal');
     postButton.setAttribute('data-target', '#modal');
     postButton.classList.add('btn', 'btn-primary', 'btn-sm');
-    postButton.textContent = 'Просмотр';
+    postButton.textContent = i18next.t('preview');
     postEl.append(linkEl);
     postEl.append(postButton);
     return postEl;
@@ -119,7 +125,7 @@ const initView = (state, elements) => {
       }
     });
     const caption = document.createElement('h2');
-    caption.textContent = 'Посты';
+    caption.textContent = i18next.t('postsTitle');
     postsBox.prepend(caption);
     const postsList = document.createElement('ul');
     postsList.classList.add('list-group');

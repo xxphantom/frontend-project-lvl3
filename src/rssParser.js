@@ -4,7 +4,7 @@ const rssParser = (xmlString) => {
   const channelEl = dom.querySelector('channel');
   const postsEls = [...dom.querySelectorAll('item')];
   if (!channelEl) {
-    throw Error('Ресурс не содержит валидный RSS');
+    throw Error('parseError');
   }
   const propsWhiteList = ['title', 'description', 'link', 'guid'];
 

@@ -13,6 +13,9 @@ export default {
   errors: {
     badURL: 'Проверьте, правильно ли введен URL',
     addedAlready: 'Данный источник уже добавлен в список фидов',
+    parseError: 'Ресурс не содержит валидный RSS',
+    networkError: 'Oшибка сети',
+    networkErrorUpdate: 'ruFailed to load new posts - network error',
   },
   feedback: {
     success: 'RSS успешно загружен',

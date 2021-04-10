@@ -5,7 +5,6 @@ import ru from '../locales/ru.js';
 
 const options = {
   fallbackLng: 'en',
-  debug: true,
   resources: {
     en: {
       translation: en,

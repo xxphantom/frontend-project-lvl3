@@ -1,13 +1,10 @@
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import _ from 'lodash';
 import * as yup from 'yup';
-import axios from 'axios';
 import initView from './view.js';
-import rssParser from './rssParser';
+import contentUpdate from './updater.js';
 
 const app = () => {
-  const serverOrigins = 'https://hexlet-allorigins.herokuapp.com/get?url=';
   const elements = {
     formBox: document.querySelector('div.col-md-8'),
     feedsBox: document.querySelector('div.feeds'),
@@ -74,44 +71,18 @@ const app = () => {
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const feedSourceURL = elements.input.value.trim();
+    const sourceLink = elements.input.value.trim();
     if (state.form.status === 'invalid') {
       return;
     }
-    const double = watched.feeds.find((feed) => feed.feedSourceURL === feedSourceURL);
+    const double = watched.feeds.find((feed) => feed.sourceLink === sourceLink);
     if (double) {
       watched.form.status = 'invalid';
       watched.form.error = 'errors.addedAlready';
       return;
     }
     watched.form.status = 'downloading';
-    const queryURL = `${serverOrigins}${encodeURIComponent(feedSourceURL)}`;
-
-    axios.get(queryURL)
-      .then((response) => {
-        const xmlString = response.data.contents;
-        try {
-          const feedId = _.uniqueId();
-          const feedData = rssParser(xmlString);
-          watched.feeds = [...watched.feeds, {
-            feedSourceURL,
-            feedId,
-            title: feedData.title,
-            description: feedData.description,
-          }];
-          watched.posts = [...watched.posts,
-            ...feedData.posts.map((post) => ({ ...post, feedId }))];
-          watched.form.status = 'success';
-          watched.form.feedback = 'feedback.success';
-        } catch (err) {
-          watched.form.status = 'parseFailed';
-          watched.form.error = err.message;
-        }
-      })
-      .catch((err) => {
-        watched.form.status = 'failed';
-        watched.form.error = err.message;
-      });
+    contentUpdate(watched, sourceLink);
   });
 };
 export default app;

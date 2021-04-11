@@ -10,55 +10,45 @@ const buildFeedbackElement = (textFeedback, feedbackClass) => {
   return divEl;
 };
 const initView = (state, elements) => {
-  const {
-    input,
-    button,
-    form,
-    formBox,
-    feedsBox,
-    postsBox,
-    modalEls,
-  } = elements;
-
   const i18next = localize();
   localizeTemplate(i18next);
 
-  const renderFeedback = (feedBackKey, feedbackClass) => {
+  const renderFeedback = (feedbackKey, feedbackClass) => {
     const oldFeedbackEl = document.querySelector('.feedback');
     if (oldFeedbackEl) {
       oldFeedbackEl.remove();
     }
-    if (!feedBackKey) {
+    if (!feedbackKey) {
       return;
     }
-    const textFeedback = i18next.t(feedBackKey);
+    const textFeedback = i18next.t(feedbackKey);
     const errorEl = buildFeedbackElement(textFeedback, feedbackClass);
-    formBox.append(errorEl);
+    elements.formBox.append(errorEl);
   };
 
   const renderInput = (status) => {
     switch (status) {
       case 'filling':
-        input.classList.remove('is-invalid');
+        elements.input.classList.remove('is-invalid');
         break;
       case 'invalid':
-        input.classList.add('is-invalid');
-        input.removeAttribute('disabled');
-        button.removeAttribute('disabled');
+        elements.input.classList.add('is-invalid');
+        elements.input.removeAttribute('disabled');
+        elements.button.removeAttribute('disabled');
         break;
       case 'downloading':
-        input.setAttribute('disabled', true);
-        button.setAttribute('disabled', true);
+        elements.input.setAttribute('disabled', true);
+        elements.button.setAttribute('disabled', true);
         break;
       case 'success':
-        input.removeAttribute('disabled');
-        button.removeAttribute('disabled');
-        form.reset();
+        elements.input.removeAttribute('disabled');
+        elements.button.removeAttribute('disabled');
+        elements.form.reset();
         break;
       case 'failed':
       case 'parseFailed':
-        input.removeAttribute('disabled');
-        button.removeAttribute('disabled');
+        elements.input.removeAttribute('disabled');
+        elements.button.removeAttribute('disabled');
         break;
       default:
         throw Error(`Unknown form status ${status}`);
@@ -78,13 +68,13 @@ const initView = (state, elements) => {
   };
 
   const renderFeeds = (feeds) => {
-    feedsBox.innerHTML = '';
+    elements.feedsBox.innerHTML = '';
     const caption = document.createElement('h2');
     caption.textContent = i18next.t('feedsTitle');
-    feedsBox.prepend(caption);
+    elements.feedsBox.prepend(caption);
     const feedsList = document.createElement('ul');
     feedsList.classList.add('list-group', 'mb-5');
-    feedsBox.append(feedsList);
+    elements.feedsBox.append(feedsList);
     feeds.forEach((feed) => {
       const feedEl = renderFeedEl(feed.title, feed.description);
       feedsList.prepend(feedEl);
@@ -92,33 +82,15 @@ const initView = (state, elements) => {
   };
 
   const renderPostEl = (post) => {
-    const {
-      title,
-      link,
-      guid,
-    } = post;
-    const postEl = document.createElement('li');
-    postEl.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start');
-    const linkEl = document.createElement('a');
-    linkEl.setAttribute('href', link);
-    linkEl.setAttribute('target', '_blank');
-    linkEl.classList.add('font-weight-bold');
-    linkEl.textContent = title;
-    const postButton = document.createElement('button');
-    postButton.setAttribute('type', 'button');
-    postButton.setAttribute('data-id', guid);
-    postButton.setAttribute('data-toggle', 'modal');
-    postButton.setAttribute('data-target', '#modal');
-    postButton.classList.add('btn', 'btn-primary', 'btn-sm');
-    postButton.textContent = i18next.t('preview');
-    postEl.append(linkEl);
-    postEl.append(postButton);
-    return postEl;
+    const html = `<li class="list-group-item d-flex justify-content-between align-items-start">
+    <a href="${post.link}" class="font-weight-bold" target="_blank">${post.title}</a>
+    <button type="button" data-id="${post.guid}" data-toggle="modal" data-target="#modal" class="btn btn-primary btn-sm">${i18next.t('preview')}</button></li>`;
+    return html;
   };
 
   const renderPosts = (posts) => {
-    postsBox.innerHTML = '';
-    postsBox.addEventListener('click', (e) => {
+    elements.postsBox.innerHTML = '';
+    elements.postsBox.addEventListener('click', (e) => {
       if (e.target.tagName === 'A') {
         e.target.classList.remove('font-weight-bold');
         e.target.classList.add('font-weight-normal');
@@ -126,19 +98,16 @@ const initView = (state, elements) => {
     });
     const caption = document.createElement('h2');
     caption.textContent = i18next.t('postsTitle');
-    postsBox.prepend(caption);
+    elements.postsBox.prepend(caption);
     const postsList = document.createElement('ul');
     postsList.classList.add('list-group');
-    postsBox.append(postsList);
-    posts.forEach((post) => {
-      const postEl = renderPostEl(post);
-      postsList.append(postEl);
-    });
+    elements.postsBox.append(postsList);
+    elements.postsBox.innerHTML = posts.map((post) => renderPostEl(post)).join('');
   };
 
   const renderModal = () => {
     const { preview, posts } = state;
-    const { title, description, link } = modalEls;
+    const { title, description, link } = elements.modalEls;
     const postData = posts.find((post) => post.guid === preview.postId);
     title.textContent = postData.title;
     const tempContainer = document.createElement('div');

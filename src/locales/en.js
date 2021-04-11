@@ -19,5 +19,6 @@ export default {
   },
   feedback: {
     success: 'RSS loaded successfully',
+    updateSuccess: 'RSS Updated successfully',
   },
 };

@@ -15,9 +15,10 @@ export default {
     addedAlready: 'Данный источник уже добавлен в список фидов',
     parseError: 'Ресурс не содержит валидный RSS',
     networkError: 'Oшибка сети',
-    networkErrorUpdate: 'ruFailed to load new posts - network error',
+    networkErrorUpdate: 'Не удалось подключиться к фиду для поиска обновлений',
   },
   feedback: {
     success: 'RSS успешно загружен',
+    updateSuccess: 'RSS успешно обновлены',
   },
 };

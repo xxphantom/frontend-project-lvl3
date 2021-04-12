@@ -55,30 +55,18 @@ const initView = (state, elements) => {
     }
   };
 
-  const renderFeedEl = (title, description) => {
-    const feedEl = document.createElement('li');
-    feedEl.classList.add('list-group-item');
-    const titleEl = document.createElement('h3');
-    titleEl.textContent = title;
-    const descriptionEl = document.createElement('p');
-    descriptionEl.textContent = description;
-    feedEl.append(titleEl);
-    feedEl.append(descriptionEl);
-    return feedEl;
+  const renderFeed = (title, description) => {
+    const feed = `
+    <li class='list-group-item'><h3>${title}</h3><p>${description}</p>`;
+    return feed;
   };
 
   const renderFeeds = (feeds) => {
     elements.feedsBox.innerHTML = '';
-    const caption = document.createElement('h2');
-    caption.textContent = i18next.t('feedsTitle');
-    elements.feedsBox.prepend(caption);
-    const feedsList = document.createElement('ul');
-    feedsList.classList.add('list-group', 'mb-5');
-    elements.feedsBox.append(feedsList);
-    feeds.forEach((feed) => {
-      const feedEl = renderFeedEl(feed.title, feed.description);
-      feedsList.prepend(feedEl);
-    });
+    const feedsList = feeds
+      .map((feed) => renderFeed(feed.title, feed.description)).join('');
+    elements.feedsBox.innerHTML = `<h2>${i18next.t('feedsTitle')}</h2>
+    <ul class='list-group mb-5'>${feedsList}</ul>`;
   };
 
   const renderPostEl = (post) => {
@@ -107,18 +95,17 @@ const initView = (state, elements) => {
 
   const renderModal = () => {
     const { preview, posts } = state;
-    const { title, description, link } = elements.modalEls;
     const postData = posts.find((post) => post.guid === preview.postId);
-    title.textContent = postData.title;
+    elements.title.textContent = postData.title;
     const tempContainer = document.createElement('div');
     tempContainer.innerHTML = postData.description;
-    const descriptionWithouTags = tempContainer.textContent;
-    const smallDescription = _.truncate(descriptionWithouTags, {
+    const descriptionWithoutTags = tempContainer.textContent;
+    const smallDescription = _.truncate(descriptionWithoutTags, {
       length: 500,
       separator: ' ',
     });
-    description.textContent = smallDescription;
-    link.setAttribute('href', postData.link);
+    elements.description.textContent = smallDescription;
+    elements.link.setAttribute('href', postData.link);
   };
 
   const mapping = {

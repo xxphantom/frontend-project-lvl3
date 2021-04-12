@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { parser } from './utils.js';
 
 const updateInterval = 5000;
-const serverOrigins = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true?url=';
+const serverOrigins = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=';
 
 const updater = (watched) => {
   const promises = watched.feeds.map(({ sourceLink }) => (

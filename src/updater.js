@@ -2,7 +2,7 @@ import axios from 'axios';
 import _ from 'lodash';
 import parser from './rssParser';
 
-const updateInterval = 30000;
+const updateInterval = 5000;
 const serverOrigins = 'https://hexlet-allorigins.herokuapp.com/get?url=';
 
 const updater = (watched) => {

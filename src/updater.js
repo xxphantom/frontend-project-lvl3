@@ -1,6 +1,6 @@
 import axios from 'axios';
 import _ from 'lodash';
-import parser from './rssParser';
+import { parser } from './utils.js';
 
 const updateInterval = 5000;
 const serverOrigins = 'https://hexlet-allorigins.herokuapp.com/get?url=';

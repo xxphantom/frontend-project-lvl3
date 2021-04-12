@@ -1,6 +1,8 @@
-const rssParser = (xmlString) => {
-  const parser = new DOMParser();
-  const dom = parser.parseFromString(xmlString, 'text/xml');
+import * as yup from 'yup';
+
+export const parser = (xmlString) => {
+  const xmlParser = new DOMParser();
+  const dom = xmlParser.parseFromString(xmlString, 'text/xml');
   const channelEl = dom.querySelector('channel');
   const postsEls = [...dom.querySelectorAll('item')];
   if (!channelEl) {
@@ -26,4 +28,16 @@ const rssParser = (xmlString) => {
     posts,
   };
 };
-export default rssParser;
+
+const errCode = 'errors.badURL';
+const schema = yup.string().required(errCode).trim().url(errCode);
+
+export const inputValidate = (url) => {
+  try {
+    schema.validateSync(url);
+    return null;
+  } catch (err) {
+    console.dir(err.path);
+    return err;
+  }
+};

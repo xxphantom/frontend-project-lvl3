@@ -1,7 +1,7 @@
 import 'bootstrap';
-import * as yup from 'yup';
 import initView from './view.js';
 import contentUpdate from './updater.js';
+import { inputValidate } from './utils.js';
 
 const app = () => {
   const elements = {
@@ -34,23 +34,6 @@ const app = () => {
 
   const watched = initView(state, elements);
 
-  yup.setLocale({
-    string: {
-      default: 'error',
-      url: 'errors.badURL',
-    },
-  });
-  const schema = yup.string().required().trim().url();
-
-  const validateURL = (url) => {
-    try {
-      schema.validateSync(url);
-      return null;
-    } catch (err) {
-      return err;
-    }
-  };
-
   elements.postsBox.addEventListener('click', (e) => {
     if (e.target.tagName === 'BUTTON') {
       watched.preview.postId = e.target.dataset.id;
@@ -59,7 +42,7 @@ const app = () => {
 
   elements.input.addEventListener('change', (e) => {
     const url = e.currentTarget.value;
-    const error = validateURL(url);
+    const error = inputValidate(url);
     if (!error) {
       watched.form.status = 'filling';
       watched.form.error = null;

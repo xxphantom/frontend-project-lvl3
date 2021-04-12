@@ -96,7 +96,7 @@ const initView = (state, elements) => {
   const renderModal = () => {
     const { preview, posts } = state;
     const postData = posts.find((post) => post.guid === preview.postId);
-    elements.title.textContent = postData.title;
+    elements.modalEls.title.textContent = postData.title;
     const tempContainer = document.createElement('div');
     tempContainer.innerHTML = postData.description;
     const descriptionWithoutTags = tempContainer.textContent;
@@ -104,8 +104,8 @@ const initView = (state, elements) => {
       length: 500,
       separator: ' ',
     });
-    elements.description.textContent = smallDescription;
-    elements.link.setAttribute('href', postData.link);
+    elements.modalEls.description.textContent = smallDescription;
+    elements.modalEls.link.setAttribute('href', postData.link);
   };
 
   const mapping = {

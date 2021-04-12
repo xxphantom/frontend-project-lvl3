@@ -37,7 +37,6 @@ export const inputValidate = (url) => {
     schema.validateSync(url);
     return null;
   } catch (err) {
-    console.dir(err.path);
     return err;
   }
 };

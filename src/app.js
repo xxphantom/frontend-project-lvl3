@@ -55,7 +55,10 @@ const app = () => {
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
     const sourceLink = elements.input.value.trim();
-    if (state.form.status === 'invalid') {
+    const error = inputValidate(sourceLink);
+    if ((error)) {
+      watched.form.status = 'invalid';
+      watched.form.error = error.message;
       return;
     }
     const double = watched.feeds.find((feed) => feed.sourceLink === sourceLink);

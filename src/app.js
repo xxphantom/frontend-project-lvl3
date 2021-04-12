@@ -1,5 +1,4 @@
 import 'bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import * as yup from 'yup';
 import initView from './view.js';
 import contentUpdate from './updater.js';
@@ -37,10 +36,11 @@ const app = () => {
 
   yup.setLocale({
     string: {
+      default: 'error',
       url: 'errors.badURL',
     },
   });
-  const schema = yup.string().trim().url();
+  const schema = yup.string().required().trim().url();
 
   const validateURL = (url) => {
     try {

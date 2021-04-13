@@ -12,7 +12,7 @@ export default {
   close: 'Закрыть',
   errors: {
     badURL: 'Проверьте, правильно ли введен URL',
-    addedAlready: 'Данный источник уже добавлен в список фидов',
+    addedAlready: 'RSS уже существует',
     parseError: 'Ресурс не содержит валидный RSS',
     networkError: 'Oшибка сети',
     networkErrorUpdate: 'Не удалось подключиться к фиду для поиска обновлений',

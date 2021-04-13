@@ -11,14 +11,12 @@ export default {
   read: 'Читать полностью',
   close: 'Закрыть',
   errors: {
-    badURL: 'Проверьте, правильно ли введен URL',
+    badURL: 'Ссылка должна быть валидным URL',
     addedAlready: 'RSS уже существует',
     parseError: 'Ресурс не содержит валидный RSS',
     networkError: 'Oшибка сети',
-    networkErrorUpdate: 'Не удалось подключиться к фиду для поиска обновлений',
   },
   feedback: {
     success: 'RSS успешно загружен',
-    updateSuccess: 'RSS успешно обновлены',
   },
 };

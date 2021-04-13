@@ -26,33 +26,38 @@ const initView = (state, elements) => {
     elements.formBox.append(errorEl);
   };
 
+  const inputRenderMapping = {
+    filling: () => elements.input.classList.remove('is-invalid'),
+    invalid: () => {
+      elements.input.classList.add('is-invalid');
+      elements.input.removeAttribute('readonly');
+      elements.button.removeAttribute('disabled');
+    },
+    downloading: () => {
+      elements.input.setAttribute('readonly', true);
+      elements.button.setAttribute('disabled', true);
+    },
+    success: () => {
+      elements.input.removeAttribute('readonly');
+      elements.button.removeAttribute('disabled');
+      elements.form.reset();
+    },
+    failed: () => {
+      elements.input.removeAttribute('readonly');
+      elements.button.removeAttribute('disabled');
+    },
+    parseFailed: () => {
+      elements.input.removeAttribute('readonly');
+      elements.button.removeAttribute('disabled');
+    },
+  };
+
   const renderInput = (status) => {
-    switch (status) {
-      case 'filling':
-        elements.input.classList.remove('is-invalid');
-        break;
-      case 'invalid':
-        elements.input.classList.add('is-invalid');
-        elements.input.removeAttribute('disabled');
-        elements.button.removeAttribute('disabled');
-        break;
-      case 'downloading':
-        elements.input.setAttribute('disabled', true);
-        elements.button.setAttribute('disabled', true);
-        break;
-      case 'success':
-        elements.input.removeAttribute('disabled');
-        elements.button.removeAttribute('disabled');
-        elements.form.reset();
-        break;
-      case 'failed':
-      case 'parseFailed':
-        elements.input.removeAttribute('disabled');
-        elements.button.removeAttribute('disabled');
-        break;
-      default:
-        throw Error(`Unknown form status ${status}`);
+    const render = inputRenderMapping[status];
+    if (!render) {
+      throw Error(`Unknown form status ${status}`);
     }
+    render();
   };
 
   const renderFeed = (title, description) => {

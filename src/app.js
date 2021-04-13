@@ -1,6 +1,6 @@
 import 'bootstrap';
 import initView from './view.js';
-import contentUpdate from './updater.js';
+import { watchForUpdate, getContent } from './getContent.js';
 import { inputValidate } from './utils.js';
 
 const app = () => {
@@ -33,6 +33,7 @@ const app = () => {
   };
 
   const watched = initView(state, elements);
+  watchForUpdate(watched);
 
   elements.postsBox.addEventListener('click', (e) => {
     if (e.target.tagName === 'BUTTON') {
@@ -68,7 +69,7 @@ const app = () => {
       return;
     }
     watched.form.status = 'downloading';
-    contentUpdate(watched, sourceLink);
+    getContent(watched, sourceLink);
   });
 };
 export default app;

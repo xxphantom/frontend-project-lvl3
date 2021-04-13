@@ -5,7 +5,7 @@ import { parser } from './utils.js';
 const updateInterval = 5000;
 const serverOrigins = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=';
 
-const updater = (watched) => {
+export const watchForUpdate = (watched) => {
   const promises = watched.feeds.map(({ sourceLink }) => (
     axios.get(`${serverOrigins}${encodeURIComponent(sourceLink)}`)));
   Promise.allSettled(promises)
@@ -26,11 +26,11 @@ const updater = (watched) => {
           watched.posts.unshift(...newPostsWithfeedId);
         }
       });
-      setTimeout(() => updater(watched, serverOrigins), updateInterval);
+      setTimeout(() => watchForUpdate(watched, serverOrigins), updateInterval);
     });
 };
 
-const contentUpdate = (watched, sourceLink) => {
+export const getContent = (watched, sourceLink) => {
   const queryURL = `${serverOrigins}${encodeURIComponent(sourceLink)}`;
   axios.get(queryURL)
     .then((response) => {
@@ -49,7 +49,6 @@ const contentUpdate = (watched, sourceLink) => {
           ...watched.posts];
         watched.form.status = 'success';
         watched.form.feedback = 'feedback.success';
-        updater(watched, serverOrigins);
       } catch (err) {
         watched.form.status = 'parseFailed';
         watched.form.error = 'errors.parseError';
@@ -60,4 +59,3 @@ const contentUpdate = (watched, sourceLink) => {
       watched.form.error = 'errors.networkError';
     });
 };
-export default contentUpdate;

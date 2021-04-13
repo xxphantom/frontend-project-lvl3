@@ -30,14 +30,32 @@ const app = () => {
     },
     feeds: [],
     posts: [],
+    uiState: {
+      posts: {},
+    },
   };
 
   const watched = initView(state, elements);
   watchForUpdate(watched);
 
   elements.postsBox.addEventListener('click', (e) => {
+    const postId = e.target.dataset.id;
     if (e.target.tagName === 'BUTTON') {
-      watched.preview.postId = e.target.dataset.id;
+      watched.preview.postId = postId;
+      watched.uiState.posts = watched.uiState.posts.map((post) => {
+        if (post.id === postId) {
+          return ({ id: postId, status: 'read' });
+        }
+        return post;
+      });
+    }
+    if (e.target.tagName === 'A') {
+      watched.uiState.posts = watched.uiState.posts.map((post) => {
+        if (post.id === postId) {
+          return ({ id: postId, status: 'read' });
+        }
+        return post;
+      });
     }
   });
 

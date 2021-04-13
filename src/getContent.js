@@ -24,6 +24,8 @@ export const watchForUpdate = (watched) => {
             .find(({ guid }) => guid === post.guid));
           const newPostsWithfeedId = newPosts.map((post) => ({ ...post, feedId }));
           watched.posts.unshift(...newPostsWithfeedId);
+          watched.uiState.posts.push(...newPostsWithfeedId
+            .map(({ guid }) => ({ id: guid, status: 'unread' })));
         }
       });
       setTimeout(() => watchForUpdate(watched, serverOrigins), updateInterval);
@@ -47,6 +49,8 @@ export const getContent = (watched, sourceLink) => {
         watched.posts = [
           ...feedData.posts.map((post) => ({ ...post, feedId })),
           ...watched.posts];
+        watched.uiState.posts = feedData.posts
+          .map(({ guid }) => ({ id: guid, status: 'unread' }));
         watched.form.status = 'success';
         watched.form.feedback = 'feedback.success';
       } catch (err) {

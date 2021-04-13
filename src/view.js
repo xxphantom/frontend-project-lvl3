@@ -76,19 +76,13 @@ const initView = (state, elements) => {
 
   const renderPostEl = (post) => {
     const html = `<li class="list-group-item d-flex justify-content-between align-items-start">
-    <a href="${post.link}" class="font-weight-bold" target="_blank">${post.title}</a>
+    <a href="${post.link}" class="font-weight-bold" data-id="${post.guid}" target="_blank">${post.title}</a>
     <button type="button" data-id="${post.guid}" data-toggle="modal" data-target="#modal" class="btn btn-primary btn-sm">${i18next.t('preview')}</button></li>`;
     return html;
   };
 
   const renderPosts = (posts) => {
     elements.postsBox.innerHTML = '';
-    elements.postsBox.addEventListener('click', (e) => {
-      if (e.target.tagName === 'A') {
-        e.target.classList.remove('font-weight-bold');
-        e.target.classList.add('font-weight-normal');
-      }
-    });
     const caption = document.createElement('h2');
     caption.textContent = i18next.t('postsTitle');
     elements.postsBox.prepend(caption);
@@ -113,6 +107,16 @@ const initView = (state, elements) => {
     elements.modalEls.link.setAttribute('href', postData.link);
   };
 
+  const renderUiState = () => {
+    state.uiState.posts.forEach((post) => {
+      const postEl = document.querySelector(`a[data-id="${post.id}"]`);
+      if (post.status === 'read') {
+        postEl.classList.remove('font-weight-bold');
+        postEl.classList.add('font-weight-normal');
+      }
+    });
+  };
+
   const mapping = {
     'form.status': () => renderInput(state.form.status),
     'form.error': () => renderFeedback(state.form.error, 'text-danger'),
@@ -120,6 +124,7 @@ const initView = (state, elements) => {
     feeds: () => renderFeeds(state.feeds),
     posts: () => renderPosts(state.posts),
     'preview.postId': () => renderModal(state),
+    'uiState.posts': () => renderUiState(),
   };
 
   const watched = onChange(state, (path) => {

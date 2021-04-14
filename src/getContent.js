@@ -19,7 +19,8 @@ export const periodicUpdateContent = (watched) => {
       resultsWithMetadata.forEach(({ result: { status, value }, feedId }) => {
         if (status === 'fulfilled') {
           const updatedFeed = parse(value.data.contents);
-          const newPosts = _.differenceBy(updatedFeed.posts, watched.posts, ({ guid }) => guid);
+          const oldPosts = watched.posts.filter((post) => post.feedId === feedId);
+          const newPosts = _.differenceBy(updatedFeed.posts, oldPosts, ({ guid }) => guid);
           const newPostsWithfeedId = newPosts.map((post) => ({ ...post, feedId }));
           watched.posts.unshift(...newPostsWithfeedId);
           watched.uiState.posts.push(...newPostsWithfeedId
@@ -52,7 +53,6 @@ export const getContent = (watched, sourceLink) => {
         watched.form.status = 'success';
         watched.form.feedback = 'feedback.success';
       } catch (err) {
-        console.dir(err);
         watched.form.status = 'parseFailed';
         watched.form.error = 'errors.parseError';
       }

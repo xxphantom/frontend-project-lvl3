@@ -69,6 +69,8 @@ const app = () => {
       watched.form.error = 'errors.addedAlready';
       return;
     }
+    watched.form.error = null;
+    watched.form.feedback = null;
     watched.form.status = 'downloading';
     getContent(watched, sourceLink);
   };

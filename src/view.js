@@ -26,26 +26,26 @@ const renderInputMapping = {
   filling: (elements) => elements.input.classList.remove('is-invalid'),
   invalid: (elements) => {
     elements.input.classList.add('is-invalid');
-    elements.input.readonly = false;
-    elements.button.disabled = false;
+    elements.input.removeAttribute('readonly');
+    elements.button.removeAttribute('disabled');
   },
   downloading: (elements) => {
     elements.input.classList.remove('is-invalid');
-    elements.input.readonly = true;
-    elements.button.disabled = true;
+    elements.input.setAttribute('readonly', true);
+    elements.button.setAttribute('disabled', true);
   },
   success: (elements) => {
-    elements.input.readonly = false;
-    elements.button.disabled = false;
+    elements.input.removeAttribute('readonly');
+    elements.button.removeAttribute('disabled');
     elements.form.reset();
   },
   failed: (elements) => {
-    elements.input.readonly = false;
-    elements.button.disabled = false;
+    elements.input.removeAttribute('readonly');
+    elements.button.removeAttribute('disabled');
   },
   parseFailed: (elements) => {
-    elements.input.readonly = false;
-    elements.button.disabled = false;
+    elements.input.removeAttribute('readonly');
+    elements.button.removeAttribute('disabled');
   },
 };
 

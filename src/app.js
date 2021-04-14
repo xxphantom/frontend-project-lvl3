@@ -1,6 +1,6 @@
 import 'bootstrap';
 import initView from './view.js';
-import { watchForUpdate, getContent } from './getContent.js';
+import { periodicUpdateContent, getContent } from './getContent.js';
 import { inputValidate } from './utils.js';
 
 const app = () => {
@@ -31,47 +31,30 @@ const app = () => {
     feeds: [],
     posts: [],
     uiState: {
-      posts: {},
+      posts: [],
     },
   };
 
   const watched = initView(state, elements);
-  watchForUpdate(watched);
+  periodicUpdateContent(watched);
 
-  elements.postsBox.addEventListener('click', (e) => {
-    const postId = e.target.dataset.id;
-    if (e.target.tagName === 'BUTTON') {
-      watched.preview.postId = postId;
-      watched.uiState.posts = watched.uiState.posts.map((post) => {
-        if (post.id === postId) {
-          return ({ id: postId, status: 'read' });
-        }
-        return post;
-      });
+  const postBoxHandler = ({ target }) => {
+    const { tagName, dataset: { id } } = target;
+    if (tagName === 'LI') {
+      return;
     }
-    if (e.target.tagName === 'A') {
-      watched.uiState.posts = watched.uiState.posts.map((post) => {
-        if (post.id === postId) {
-          return ({ id: postId, status: 'read' });
-        }
-        return post;
-      });
+    if (tagName === 'BUTTON') {
+      watched.preview.postId = id;
     }
-  });
+    watched.uiState.posts = watched.uiState.posts.map((post) => {
+      if (post.id === id) {
+        return ({ id, status: 'read' });
+      }
+      return post;
+    });
+  };
 
-  elements.input.addEventListener('change', (e) => {
-    const url = e.currentTarget.value;
-    const error = inputValidate(url);
-    if (!error) {
-      watched.form.status = 'filling';
-      watched.form.error = null;
-    } else {
-      watched.form.status = 'invalid';
-      watched.form.error = error.message;
-    }
-  });
-
-  elements.form.addEventListener('submit', (e) => {
+  const formHandler = (e) => {
     e.preventDefault();
     const sourceLink = elements.input.value.trim();
     const error = inputValidate(sourceLink);
@@ -80,14 +63,17 @@ const app = () => {
       watched.form.error = error.message;
       return;
     }
-    const double = watched.feeds.find((feed) => feed.sourceLink === sourceLink);
-    if (double) {
+    const doubledFeed = watched.feeds.find((feed) => feed.sourceLink === sourceLink);
+    if (doubledFeed) {
       watched.form.status = 'invalid';
       watched.form.error = 'errors.addedAlready';
       return;
     }
     watched.form.status = 'downloading';
     getContent(watched, sourceLink);
-  });
+  };
+
+  elements.postsBox.addEventListener('click', postBoxHandler);
+  elements.form.addEventListener('submit', formHandler);
 };
 export default app;

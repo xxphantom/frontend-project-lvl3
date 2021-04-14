@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 
-export const parser = (xmlString) => {
+export const parse = (xmlString) => {
   const xmlParser = new DOMParser();
   const dom = xmlParser.parseFromString(xmlString, 'text/xml');
   const channelEl = dom.querySelector('channel');

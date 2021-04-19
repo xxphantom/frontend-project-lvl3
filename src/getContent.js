@@ -1,5 +1,6 @@
 import axios from 'axios';
-import _ from 'lodash';
+import _differenceBy from 'lodash/differenceBy';
+import _uniqueId from 'lodash/uniqueId';
 import { parse } from './utils.js';
 
 const updateInterval = 5000;
@@ -20,7 +21,7 @@ export const periodicUpdateContent = (watched) => {
         if (status === 'fulfilled') {
           const updatedFeed = parse(value.data.contents);
           const oldPosts = watched.posts.filter((post) => post.feedId === feedId);
-          const newPosts = _.differenceBy(updatedFeed.posts, oldPosts, ({ guid }) => guid);
+          const newPosts = _differenceBy(updatedFeed.posts, oldPosts, ({ guid }) => guid);
           const newPostsWithfeedId = newPosts.map((post) => ({ ...post, feedId }));
           watched.posts.unshift(...newPostsWithfeedId);
           watched.uiState.posts.push(...newPostsWithfeedId
@@ -37,7 +38,7 @@ export const getContent = (watched, sourceLink) => {
     .then((response) => {
       const xmlString = response.data.contents;
       try {
-        const feedId = _.uniqueId();
+        const feedId = _uniqueId();
         const feedData = parse(xmlString);
         watched.feeds = [...watched.feeds, {
           sourceLink,

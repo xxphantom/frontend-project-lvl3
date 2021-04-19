@@ -1,4 +1,5 @@
-import 'bootstrap';
+import 'bootstrap/js/dist/util';
+import 'bootstrap/js/dist/modal';
 import initView from './view.js';
 import { periodicUpdateContent, getContent } from './getContent.js';
 import { inputValidate } from './utils.js';

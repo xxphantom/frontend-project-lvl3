@@ -1,5 +1,5 @@
 import onChange from 'on-change';
-import _ from 'lodash';
+import _truncate from 'lodash/truncate';
 import localize from './localize';
 import localizeTemplate from './localize/template.js';
 
@@ -83,7 +83,7 @@ const renderModal = (elements, state) => {
   const tempContainer = document.createElement('div');
   tempContainer.innerHTML = postData.description;
   const descriptionWithoutTags = tempContainer.textContent;
-  const smallDescription = _.truncate(descriptionWithoutTags, {
+  const smallDescription = _truncate(descriptionWithoutTags, {
     length: 500,
     separator: ' ',
   });

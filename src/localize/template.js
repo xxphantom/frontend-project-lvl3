@@ -1,4 +1,4 @@
-const translateHomePage = (i18next) => {
+const translateHomePage = (i18n) => {
   const elements = {
     title: [document.querySelector('title'), 'textContent'],
     headline: [document.querySelector('h1.display-4'), 'textContent'],
@@ -11,7 +11,9 @@ const translateHomePage = (i18next) => {
   };
   Object.entries(elements).forEach((element) => {
     const [key, [domEl, attribute]] = element;
-    domEl[attribute] = i18next.t(key);
+    i18n((t) => {
+      domEl[attribute] = t(key);
+    });
   });
 };
 

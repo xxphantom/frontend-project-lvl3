@@ -1,10 +1,12 @@
 import 'bootstrap/js/dist/util';
 import 'bootstrap/js/dist/modal';
 import initView from './view.js';
+import localize from './localize';
 import { periodicUpdateContent, getContent } from './getContent.js';
 import { inputValidate } from './utils.js';
 
 const app = () => {
+  const i18n = localize();
   const elements = {
     formBox: document.querySelector('div.col-md-8'),
     feedsBox: document.querySelector('div.feeds'),
@@ -25,7 +27,6 @@ const app = () => {
     },
     form: {
       status: 'filling',
-      url: null,
       error: null,
       feedback: null,
     },
@@ -36,7 +37,7 @@ const app = () => {
     },
   };
 
-  const watched = initView(state, elements);
+  const watched = initView(state, elements, i18n);
   periodicUpdateContent(watched);
 
   const postBoxHandler = ({ target }) => {

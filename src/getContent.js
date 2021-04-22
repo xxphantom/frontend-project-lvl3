@@ -37,29 +37,31 @@ export const getContent = (watched, sourceLink) => {
   axios.get(queryURL)
     .then((response) => {
       const xmlString = response.data.contents;
-      try {
-        const feedId = _uniqueId();
-        const feedData = parse(xmlString);
-        watched.feeds = [...watched.feeds, {
-          sourceLink,
-          feedId,
-          title: feedData.title,
-          description: feedData.description,
-        }];
-        watched.posts = [
-          ...feedData.posts.map((post) => ({ ...post, feedId })),
-          ...watched.posts];
-        watched.uiState.posts = feedData.posts
-          .map(({ guid }) => ({ id: guid, status: 'unread' }));
-        watched.form.status = 'success';
-        watched.form.feedback = 'feedback.success';
-      } catch (err) {
+      const feedId = _uniqueId();
+      const feedData = parse(xmlString);
+      watched.feeds = [...watched.feeds, {
+        sourceLink,
+        feedId,
+        title: feedData.title,
+        description: feedData.description,
+      }];
+      watched.posts = [
+        ...feedData.posts.map((post) => ({ ...post, feedId })),
+        ...watched.posts];
+      watched.uiState.posts = feedData.posts
+        .map(({ guid }) => ({ id: guid, status: 'unread' }));
+      watched.form.status = 'success';
+      watched.form.feedback = 'feedback.success';
+    })
+    .catch((e) => {
+      if (e.isAxiosError) {
+        watched.form.status = 'failed';
+        watched.form.error = 'errors.networkError';
+      }
+      if (e.message === 'parseError') {
         watched.form.status = 'parseFailed';
         watched.form.error = 'errors.parseError';
       }
-    })
-    .catch(() => {
-      watched.form.status = 'failed';
-      watched.form.error = 'errors.networkError';
+      throw e;
     });
 };

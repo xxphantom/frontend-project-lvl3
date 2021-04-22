@@ -1,6 +1,5 @@
 import onChange from 'on-change';
 import _truncate from 'lodash/truncate';
-import localize from './localize';
 import localizeTemplate from './localize/template.js';
 
 const buildFeedbackElement = (textFeedback, feedbackClass) => {
@@ -10,7 +9,7 @@ const buildFeedbackElement = (textFeedback, feedbackClass) => {
   return divEl;
 };
 
-const renderFeedback = (elements, i18next, feedbackKey, feedbackClass) => {
+const renderFeedback = (elements, i18n, feedbackKey, feedbackClass) => {
   const oldFeedbackEl = document.querySelector('.feedback');
   if (oldFeedbackEl) {
     oldFeedbackEl.remove();
@@ -18,9 +17,11 @@ const renderFeedback = (elements, i18next, feedbackKey, feedbackClass) => {
   if (!feedbackKey) {
     return;
   }
-  const textFeedback = i18next.t(feedbackKey);
-  const errorEl = buildFeedbackElement(textFeedback, feedbackClass);
-  elements.formBox.append(errorEl);
+  i18n((t) => {
+    const textFeedback = t(feedbackKey);
+    const errorEl = buildFeedbackElement(textFeedback, feedbackClass);
+    elements.formBox.append(errorEl);
+  });
 };
 const renderInputMapping = {
   filling: (elements) => elements.input.classList.remove('is-invalid'),
@@ -57,23 +58,30 @@ const renderInput = (elements, status) => {
   render(elements);
 };
 
-const renderFeeds = (elements, i18next, feeds) => {
+const renderFeeds = (elements, i18n, feeds) => {
   elements.feedsBox.innerHTML = '';
   const feedsList = feeds
     .map(({ title, description }) => (`<li class='list-group-item'><h3>${title}</h3><p>${description}</p>`))
     .join('');
-  elements.feedsBox.innerHTML = `<h2>${i18next.t('feedsTitle')}</h2>
-  <ul class='list-group mb-5'>${feedsList}</ul>`;
+  i18n((t) => {
+    elements.feedsBox.innerHTML = `<h2>${t('feedsTitle')}</h2>
+    <ul class='list-group mb-5'>${feedsList}</ul>`;
+  });
 };
 
-const renderPostEl = (i18next, post) => (`<li class="list-group-item d-flex justify-content-between align-items-start">
-  <a href="${post.link}" class="font-weight-bold" data-id="${post.guid}" target="_blank">${post.title}</a>
-  <button type="button" data-id="${post.guid}" data-toggle="modal" data-target="#modal" class="btn btn-primary btn-sm">${i18next.t('preview')}</button></li>`);
+const renderPostEl = (t, post, status) => (`<li class="list-group-item d-flex justify-content-between align-items-start">
+  <a href="${post.link}" class="font-weight-${status === 'read' ? 'normal' : 'bold'}" data-id="${post.guid}" target="_blank">${post.title}</a>
+  <button type="button" data-id="${post.guid}" data-toggle="modal" data-target="#modal" class="btn btn-primary btn-sm">${t('preview')}</button></li>`);
 
-const renderPosts = (elements, i18next, posts) => {
-  elements.postsBox.innerHTML = `
-  <h2>${i18next.t('postsTitle')}</h2>
-  <ul class="list-group">${posts.map((post) => renderPostEl(i18next, post)).join('')}</ul>`;
+const renderPosts = (elements, i18n, posts, uiState) => {
+  i18n((t) => {
+    elements.postsBox.innerHTML = `<h2>${t('postsTitle')}</h2>
+  <ul class="list-group">${posts.map((post) => {
+    const { status } = uiState.posts.find((s) => s.id === post.guid);
+    return renderPostEl(t, post, status);
+  })
+    .join('')}</ul>`;
+  });
 };
 
 const renderModal = (elements, state) => {
@@ -101,16 +109,15 @@ const renderUiState = (state) => {
   });
 };
 
-const initView = (state, elements) => {
-  const i18next = localize();
-  localizeTemplate(i18next);
+const initView = (state, elements, i18n) => {
+  localizeTemplate(i18n);
 
   const mapping = {
     'form.status': () => renderInput(elements, state.form.status),
-    'form.error': () => renderFeedback(elements, i18next, state.form.error, 'text-danger'),
-    'form.feedback': () => renderFeedback(elements, i18next, state.form.feedback, 'text-success'),
-    feeds: () => renderFeeds(elements, i18next, state.feeds),
-    posts: () => renderPosts(elements, i18next, state.posts),
+    'form.error': () => renderFeedback(elements, i18n, state.form.error, 'text-danger'),
+    'form.feedback': () => renderFeedback(elements, i18n, state.form.feedback, 'text-success'),
+    feeds: () => renderFeeds(elements, i18n, state.feeds),
+    posts: () => renderPosts(elements, i18n, state.posts, state.uiState),
     'preview.postId': () => renderModal(elements, state),
     'uiState.posts': () => renderUiState(state),
   };

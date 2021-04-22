@@ -1,11 +1,13 @@
 import i18next from 'i18next';
-// import LanguageDetector from 'i18next-browser-languagedetector';
+import LanguageDetector from 'i18next-browser-languagedetector';
 import en from '../locales/en.js';
 import ru from '../locales/ru.js';
 
 const options = {
+  debug: process.env.NODE_ENV !== 'production',
+  lng: process.env.NODE_ENV === 'test' ? 'ru' : null,
   fallbackLng: 'en',
-  lng: 'ru',
+  initImmediate: false,
   resources: {
     en: {
       translation: en,
@@ -17,9 +19,13 @@ const options = {
 };
 
 const localize = () => {
-  // i18next.use(LanguageDetector).init(options);
-  i18next.init(options);
-  return i18next;
+  const i18nInstance = i18next.createInstance();
+  const promise = i18nInstance.use(LanguageDetector).init(options, (err) => {
+    if (err) {
+      throw Error('Something went wrong', err);
+    }
+  });
+  return (cb) => promise.then(cb);
 };
 
 export default localize;

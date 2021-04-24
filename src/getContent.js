@@ -7,17 +7,20 @@ const updateInterval = 5000;
 const serverOrigins = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=';
 
 export const periodicUpdateContent = (watched) => {
-  const promises = watched.feeds.map(({ sourceLink }) => (
-    axios.get(`${serverOrigins}${encodeURIComponent(sourceLink)}`)));
+  const promises = watched.feeds.map(({ url }) => (
+    axios.get(`${serverOrigins}${encodeURIComponent(url)}`)));
   Promise.allSettled(promises)
     .then((results) => {
       const resultsWithMetadata = results.map((result, i) => ({
         result,
         feedId: watched.feeds[i].feedId,
-        sourceLink: watched.feeds[i].sourceLink,
+        url: watched.feeds[i].url,
       }));
 
-      resultsWithMetadata.forEach(({ result: { status, value }, feedId }) => {
+      resultsWithMetadata.forEach(({ result: { status, value, reason }, feedId }) => {
+        if (reason) {
+          throw new Error(reason);
+        }
         if (status === 'fulfilled') {
           const updatedFeed = parse(value.data.contents);
           const oldPosts = watched.posts.filter((post) => post.feedId === feedId);
@@ -28,39 +31,36 @@ export const periodicUpdateContent = (watched) => {
             .map(({ guid }) => ({ id: guid, status: 'unread' })));
         }
       });
-      setTimeout(() => periodicUpdateContent(watched, serverOrigins), updateInterval);
-    });
+    })
+    .finally(setTimeout(() => periodicUpdateContent(watched), updateInterval));
 };
 
-export const getContent = (watched, sourceLink) => {
-  const queryURL = `${serverOrigins}${encodeURIComponent(sourceLink)}`;
+export const getContent = (watched, url) => {
+  const queryURL = `${serverOrigins}${encodeURIComponent(url)}`;
   axios.get(queryURL)
     .then((response) => {
-      const xmlString = response.data.contents;
       const feedId = _uniqueId();
-      const feedData = parse(xmlString);
-      watched.feeds = [...watched.feeds, {
-        sourceLink,
-        feedId,
-        title: feedData.title,
-        description: feedData.description,
-      }];
-      watched.posts = [
-        ...feedData.posts.map((post) => ({ ...post, feedId })),
-        ...watched.posts];
-      watched.uiState.posts = feedData.posts
+      const parsedData = parse(response.data.contents);
+      const { feed, posts } = parsedData;
+      const feedWithMeta = { url, feedId, ...feed };
+      const postsWithFeedId = posts
+        .map((post) => ({ ...post, feedId }));
+      const uiStatePosts = posts
         .map(({ guid }) => ({ id: guid, status: 'unread' }));
-      watched.form.status = 'success';
-      watched.form.feedback = 'feedback.success';
+      watched.feeds.unshift(feedWithMeta);
+      watched.posts.unshift(...postsWithFeedId);
+      watched.uiState.posts.push(...uiStatePosts);
+      watched.requestRSS = { status: 'success' };
+      watched.form = { status: 'empty' };
     })
     .catch((e) => {
       if (e.isAxiosError) {
-        watched.form.status = 'failed';
-        watched.form.error = 'errors.networkError';
+        watched.requestRSS = { status: 'failed' };
+        watched.form = { status: 'valid' };
       }
       if (e.message === 'parseError') {
-        watched.form.status = 'parseFailed';
-        watched.form.error = 'errors.parseError';
+        watched.requestRSS = { status: 'parseFailed' };
+        watched.form = { status: 'valid' };
       }
       throw e;
     });

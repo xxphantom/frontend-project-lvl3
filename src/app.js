@@ -22,14 +22,9 @@ const app = () => {
   };
 
   const state = {
-    preview: {
-      postId: null,
-    },
-    form: {
-      status: 'filling',
-      error: null,
-      feedback: null,
-    },
+    preview: { postId: null },
+    form: { status: 'filling' },
+    requestRSS: { status: 'idle' },
     feeds: [],
     posts: [],
     uiState: {
@@ -42,12 +37,14 @@ const app = () => {
 
   const postBoxHandler = ({ target }) => {
     const { tagName, dataset: { id } } = target;
-    if (tagName === 'LI') {
+    if (tagName !== 'A' && tagName !== 'BUTTON') {
       return;
     }
+
     if (tagName === 'BUTTON') {
-      watched.preview.postId = id;
+      watched.preview = { postId: id };
     }
+
     watched.uiState.posts = watched.uiState.posts.map((post) => {
       if (post.id === id) {
         return ({ id, status: 'read' });
@@ -58,23 +55,19 @@ const app = () => {
 
   const formHandler = (e) => {
     e.preventDefault();
-    const sourceLink = elements.input.value.trim();
-    const error = inputValidate(sourceLink);
-    if ((error)) {
-      watched.form.status = 'invalid';
-      watched.form.error = error.message;
+    const url = elements.input.value.trim();
+    const error = inputValidate(url);
+    if (error) {
+      watched.form = { status: 'notValid' };
       return;
     }
-    const doubledFeed = watched.feeds.find((feed) => feed.sourceLink === sourceLink);
+    const doubledFeed = watched.feeds.find((feed) => feed.url === url);
     if (doubledFeed) {
-      watched.form.status = 'invalid';
-      watched.form.error = 'errors.addedAlready';
+      watched.form = { status: 'addedAlready' };
       return;
     }
-    watched.form.error = null;
-    watched.form.feedback = null;
-    watched.form.status = 'downloading';
-    getContent(watched, sourceLink);
+    watched.form = { status: 'blocked' };
+    getContent(watched, url);
   };
 
   elements.postsBox.addEventListener('click', postBoxHandler);

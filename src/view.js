@@ -19,43 +19,43 @@ const renderFeedback = (elements, i18n, feedbackKey, feedbackClass) => {
   }
   i18n((t) => {
     const textFeedback = t(feedbackKey);
-    const errorEl = buildFeedbackElement(textFeedback, feedbackClass);
-    elements.formBox.append(errorEl);
+    const feedbackEl = buildFeedbackElement(textFeedback, feedbackClass);
+    elements.formBox.append(feedbackEl);
   });
 };
+
 const renderInputMapping = {
-  filling: (elements) => elements.input.classList.remove('is-invalid'),
-  invalid: (elements) => {
+  notValid: (elements, i18n) => {
     elements.input.classList.add('is-invalid');
     elements.input.removeAttribute('readonly');
     elements.button.removeAttribute('disabled');
+    renderFeedback(elements, i18n, 'errors.badURL', 'text-danger');
   },
-  downloading: (elements) => {
+  blocked: (elements) => {
     elements.input.classList.remove('is-invalid');
     elements.input.setAttribute('readonly', true);
     elements.button.setAttribute('disabled', true);
   },
-  success: (elements) => {
+  empty: (elements) => {
+    elements.input.classList.remove('is-invalid');
     elements.input.removeAttribute('readonly');
     elements.button.removeAttribute('disabled');
     elements.form.reset();
   },
-  failed: (elements) => {
+  valid: (elements) => {
+    elements.input.classList.remove('is-invalid');
     elements.input.removeAttribute('readonly');
     elements.button.removeAttribute('disabled');
   },
-  parseFailed: (elements) => {
-    elements.input.removeAttribute('readonly');
-    elements.button.removeAttribute('disabled');
-  },
+  addedAlready: (elements, i18n) => renderFeedback(elements, i18n, 'errors.addedAlready', 'text-danger'),
 };
 
-const renderInput = (elements, status) => {
+const renderInput = (elements, i18n, status) => {
   const render = renderInputMapping[status];
   if (!render) {
     throw Error(`Unknown form status ${status}`);
   }
-  render(elements);
+  render(elements, i18n);
 };
 
 const renderFeeds = (elements, i18n, feeds) => {
@@ -73,11 +73,13 @@ const renderPostEl = (t, post, status) => (`<li class="list-group-item d-flex ju
   <a href="${post.link}" class="font-weight-${status === 'read' ? 'normal' : 'bold'}" data-id="${post.guid}" target="_blank">${post.title}</a>
   <button type="button" data-id="${post.guid}" data-toggle="modal" data-target="#modal" class="btn btn-primary btn-sm">${t('preview')}</button></li>`);
 
-const renderPosts = (elements, i18n, posts, uiState) => {
+const renderPosts = (elements, i18n, state) => {
   i18n((t) => {
     elements.postsBox.innerHTML = `<h2>${t('postsTitle')}</h2>
-  <ul class="list-group">${posts.map((post) => {
-    const { status } = uiState.posts.find((s) => s.id === post.guid);
+  <ul class="list-group">${state.posts.map((post) => {
+    console.dir(state);
+    console.dir(post.id);
+    const { status } = state.uiState.posts.find((s) => s.id === post.guid);
     return renderPostEl(t, post, status);
   })
     .join('')}</ul>`;
@@ -109,21 +111,34 @@ const renderUiState = (state) => {
   });
 };
 
+const renderRequestMapping = {
+  success: (elements, i18n) => renderFeedback(elements, i18n, 'feedback.success', 'text-success'),
+  failed: (elements, i18n) => renderFeedback(elements, i18n, 'errors.networkError', 'text-danger'),
+  parseFailed: (elements, i18n) => renderFeedback(elements, i18n, 'errors.parseError', 'text-danger'),
+};
+const renderRequestRSS = (elements, status, i18n) => {
+  if (!renderRequestMapping[status]) {
+    throw new Error(`Unknown requestRSS status: ${status}`);
+  }
+  renderRequestMapping[status](elements, i18n);
+};
+
 const initView = (state, elements, i18n) => {
   localizeTemplate(i18n);
 
   const mapping = {
-    'form.status': () => renderInput(elements, state.form.status),
-    'form.error': () => renderFeedback(elements, i18n, state.form.error, 'text-danger'),
-    'form.feedback': () => renderFeedback(elements, i18n, state.form.feedback, 'text-success'),
+    form: () => renderInput(elements, i18n, state.form.status),
+    requestRSS: () => renderRequestRSS(elements, state.requestRSS.status, i18n),
     feeds: () => renderFeeds(elements, i18n, state.feeds),
-    posts: () => renderPosts(elements, i18n, state.posts, state.uiState),
-    'preview.postId': () => renderModal(elements, state),
+    posts: () => renderPosts(elements, i18n, state),
+    preview: () => renderModal(elements, state),
     'uiState.posts': () => renderUiState(state),
   };
 
   const watched = onChange(state, (path) => {
-    mapping[path](elements);
+    // console.dir(`${path}:`);
+    // console.dir(state);
+    mapping[path]();
   });
   return watched;
 };

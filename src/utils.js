@@ -1,5 +1,17 @@
 import * as yup from 'yup';
 
+const propsAllowList = ['title', 'description', 'link', 'guid'];
+
+const domEltoObj = (el) => {
+  const obj = propsAllowList.reduce((acc, propName) => {
+    if (el.querySelector(`${el.tagName} > ${propName}`) !== null) {
+      acc[propName] = el.querySelector(propName).textContent;
+    }
+    return acc;
+  }, {});
+  return obj;
+};
+
 export const parse = (xmlString) => {
   const xmlParser = new DOMParser();
   const dom = xmlParser.parseFromString(xmlString, 'text/xml');
@@ -8,28 +20,17 @@ export const parse = (xmlString) => {
   if (!channelEl) {
     throw Error('parseError');
   }
-  const propsWhiteList = ['title', 'description', 'link', 'guid'];
-
-  const domEltoObj = (el) => {
-    const obj = propsWhiteList.reduce((acc, propName) => {
-      if (el.querySelector(`${el.tagName} > ${propName}`) !== null) {
-        acc[propName] = el.querySelector(propName).textContent;
-      }
-      return acc;
-    }, {});
-    return obj;
-  };
 
   const channelProps = domEltoObj(channelEl);
   const posts = postsEls.map(domEltoObj);
 
   return {
-    ...channelProps,
+    feed: channelProps,
     posts,
   };
 };
 
-const errCode = 'errors.badURL';
+const errCode = 'badURL';
 const schema = yup.string().required(errCode).trim().url(errCode);
 
 export const inputValidate = (url) => {

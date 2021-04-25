@@ -137,7 +137,7 @@ const initView = (state, elements, i18n) => {
   };
 
   const watched = onChange(state, (path) => {
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV === 'development') {
       console.log(`Path: ${path}:`);
       console.dir(state);
     }

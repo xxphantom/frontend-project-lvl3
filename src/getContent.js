@@ -39,6 +39,9 @@ export const periodicUpdateContent = (watched) => {
         }
       });
     })
+    .catch((e) => {
+      console.log(e);
+    })
     .finally(setTimeout(() => periodicUpdateContent(watched), updateInterval));
 };
 
@@ -47,9 +50,9 @@ export const getContent = (watched, url) => {
   axios.get(queryURL)
     .then((response) => {
       const feedId = _uniqueId();
-      // if (!response.data) {
-      //   throw new Error('parseError');
-      // }
+      if (!response.data) {
+        throw new Error('parseError');
+      }
       const data = parse(response.data.contents);
       addFeedDataToState(watched, data, feedId, url);
       watched.requestRSS = { status: 'success' };
@@ -64,6 +67,5 @@ export const getContent = (watched, url) => {
         watched.requestRSS = { status: 'parseFailed' };
         watched.form = { status: 'valid' };
       }
-      throw e;
     });
 };

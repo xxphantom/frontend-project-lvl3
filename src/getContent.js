@@ -47,9 +47,9 @@ export const getContent = (watched, url) => {
   axios.get(queryURL)
     .then((response) => {
       const feedId = _uniqueId();
-      if (!response.data) {
-        throw new Error('parseError');
-      }
+      // if (!response.data) {
+      //   throw new Error('parseError');
+      // }
       const data = parse(response.data.contents);
       addFeedDataToState(watched, data, feedId, url);
       watched.requestRSS = { status: 'success' };

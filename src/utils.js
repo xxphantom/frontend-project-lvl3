@@ -1,4 +1,8 @@
 import * as yup from 'yup';
+import _truncate from 'lodash/truncate';
+import _differenceBy from 'lodash/differenceBy';
+import _uniqueId from 'lodash/uniqueId';
+import _zip from 'lodash/zip';
 
 const propsAllowList = ['title', 'description', 'link', 'guid'];
 
@@ -12,7 +16,7 @@ const domEltoObj = (el) => {
   return obj;
 };
 
-export const parse = (xmlString) => {
+const parse = (xmlString) => {
   const xmlParser = new DOMParser();
   const dom = xmlParser.parseFromString(xmlString, 'text/xml');
   const channelEl = dom.querySelector('channel');
@@ -21,11 +25,11 @@ export const parse = (xmlString) => {
     throw Error('parseError');
   }
 
-  const channelProps = domEltoObj(channelEl);
+  const feed = domEltoObj(channelEl);
   const posts = postsEls.map(domEltoObj);
 
   return {
-    feed: channelProps,
+    feed,
     posts,
   };
 };
@@ -33,11 +37,15 @@ export const parse = (xmlString) => {
 const errCode = 'badURL';
 const schema = yup.string().required(errCode).trim().url(errCode);
 
-export const inputValidate = (url) => {
+const inputValidate = (url) => {
   try {
     schema.validateSync(url);
     return null;
   } catch (err) {
     return err;
   }
+};
+
+export {
+  inputValidate, parse, _differenceBy, _uniqueId, _zip, _truncate,
 };

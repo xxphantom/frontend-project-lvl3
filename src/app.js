@@ -24,11 +24,11 @@ const app = () => {
   const state = {
     preview: { postId: null },
     form: { status: 'filling' },
-    requestRSS: { status: 'idle' },
+    requestRSS: { status: null },
     feeds: [],
     posts: [],
     uiState: {
-      posts: [],
+      posts: new Map(),
     },
   };
 
@@ -44,13 +44,7 @@ const app = () => {
     if (tagName === 'BUTTON') {
       watched.preview = { postId: id };
     }
-
-    watched.uiState.posts = watched.uiState.posts.map((post) => {
-      if (post.id === id) {
-        return ({ id, status: 'read' });
-      }
-      return post;
-    });
+    watched.uiState.posts.set(id, { status: 'read' });
   };
 
   const formHandler = (e) => {
@@ -63,7 +57,7 @@ const app = () => {
     }
     const doubledFeed = watched.feeds.find((feed) => feed.url === url);
     if (doubledFeed) {
-      watched.form = { status: 'addedAlready' };
+      watched.requestRSS = { status: 'addedAlready' };
       return;
     }
     watched.form = { status: 'blocked' };

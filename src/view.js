@@ -1,6 +1,6 @@
 import onChange from 'on-change';
-import _truncate from 'lodash/truncate';
 import localizeTemplate from './localize/template.js';
+import { _truncate } from './utils.js';
 
 const buildFeedbackElement = (textFeedback, feedbackClass) => {
   const divEl = document.createElement('div');
@@ -47,7 +47,6 @@ const renderInputMapping = {
     elements.input.removeAttribute('readonly');
     elements.button.removeAttribute('disabled');
   },
-  addedAlready: (elements, i18n) => renderFeedback(elements, i18n, 'errors.addedAlready', 'text-danger'),
 };
 
 const renderInput = (elements, i18n, status) => {
@@ -74,12 +73,11 @@ const renderPostEl = (t, post, status) => (`<li class="list-group-item d-flex ju
   <button type="button" data-id="${post.guid}" data-toggle="modal" data-target="#modal" class="btn btn-primary btn-sm">${t('preview')}</button></li>`);
 
 const renderPosts = (elements, i18n, state) => {
+  const { posts, uiState } = state;
   i18n((t) => {
     elements.postsBox.innerHTML = `<h2>${t('postsTitle')}</h2>
-  <ul class="list-group">${state.posts.map((post) => {
-    console.dir(state);
-    console.dir(post.id);
-    const { status } = state.uiState.posts.find((s) => s.id === post.guid);
+  <ul class="list-group">${posts.map((post) => {
+    const { status } = uiState.posts.get(post.guid);
     return renderPostEl(t, post, status);
   })
     .join('')}</ul>`;
@@ -102,25 +100,28 @@ const renderModal = (elements, state) => {
 };
 
 const renderUiState = (state) => {
-  state.uiState.posts.forEach((post) => {
-    const postEl = document.querySelector(`a[data-id="${post.id}"]`);
-    if (post.status === 'read') {
+  state.uiState.posts.forEach(({ status }, id) => {
+    const postEl = document.querySelector(`a[data-id="${id}"]`);
+    if (status === 'read') {
       postEl.classList.remove('font-weight-bold');
       postEl.classList.add('font-weight-normal');
     }
   });
 };
 
-const renderRequestMapping = {
-  success: (elements, i18n) => renderFeedback(elements, i18n, 'feedback.success', 'text-success'),
-  failed: (elements, i18n) => renderFeedback(elements, i18n, 'errors.networkError', 'text-danger'),
-  parseFailed: (elements, i18n) => renderFeedback(elements, i18n, 'errors.parseError', 'text-danger'),
+const requestRenderParams = {
+  success: { i18nKey: 'feedback.success', className: 'text-success' },
+  failed: { i18nKey: 'errors.networkError', className: 'text-danger' },
+  parseFailed: { i18nKey: 'errors.parseError', className: 'text-danger' },
+  addedAlready: { i18nKey: 'errors.addedAlready', className: 'text-danger' },
 };
-const renderRequestRSS = (elements, status, i18n) => {
-  if (!renderRequestMapping[status]) {
+
+const renderRequestRSS = (elements, i18n, status) => {
+  const { i18nKey, className } = requestRenderParams[status];
+  if (!requestRenderParams[status]) {
     throw new Error(`Unknown requestRSS status: ${status}`);
   }
-  renderRequestMapping[status](elements, i18n);
+  renderFeedback(elements, i18n, i18nKey, className);
 };
 
 const initView = (state, elements, i18n) => {
@@ -128,7 +129,7 @@ const initView = (state, elements, i18n) => {
 
   const mapping = {
     form: () => renderInput(elements, i18n, state.form.status),
-    requestRSS: () => renderRequestRSS(elements, state.requestRSS.status, i18n),
+    requestRSS: () => renderRequestRSS(elements, i18n, state.requestRSS.status),
     feeds: () => renderFeeds(elements, i18n, state.feeds),
     posts: () => renderPosts(elements, i18n, state),
     preview: () => renderModal(elements, state),
@@ -136,8 +137,10 @@ const initView = (state, elements, i18n) => {
   };
 
   const watched = onChange(state, (path) => {
-    // console.dir(`${path}:`);
-    // console.dir(state);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`Path: ${path}:`);
+      console.dir(state);
+    }
     mapping[path]();
   });
   return watched;

@@ -84,7 +84,7 @@ const renderPosts = (elements, i18n, state) => {
 const renderModal = (elements, state) => {
   const { preview, posts } = state;
   const postData = posts.find((post) => post.guid === preview.postId);
-  elements.modalEls.title.textContent = postData.title;
+  elements.modal.title.textContent = postData.title;
   const tempContainer = document.createElement('div');
   tempContainer.innerHTML = postData.description;
   const descriptionWithoutTags = tempContainer.textContent;
@@ -92,8 +92,8 @@ const renderModal = (elements, state) => {
     length: 500,
     separator: ' ',
   });
-  elements.modalEls.description.textContent = smallDescription;
-  elements.modalEls.link.setAttribute('href', postData.link);
+  elements.modal.description.textContent = smallDescription;
+  elements.modal.link.setAttribute('href', postData.link);
 };
 
 const renderUiState = (state) => {

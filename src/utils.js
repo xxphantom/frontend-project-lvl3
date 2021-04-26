@@ -23,19 +23,15 @@ const parse = (xmlString) => {
   if (!channelEl) {
     throw Error('parseError');
   }
-
   const feed = domEltoObj(channelEl);
   const posts = postsEls.map(domEltoObj);
-
   return {
-    feed,
-    posts,
+    feed, posts,
   };
 };
 
 const errCode = 'badURL';
 const schema = yup.string().required(errCode).trim().url(errCode);
-
 const inputValidate = (url) => {
   try {
     schema.validateSync(url);
@@ -45,6 +41,23 @@ const inputValidate = (url) => {
   }
 };
 
+const initElements = () => {
+  const elements = {
+    formBox: document.querySelector('div.col-md-8'),
+    feedsBox: document.querySelector('div.feeds'),
+    postsBox: document.querySelector('div.posts'),
+    form: document.querySelector('form.rss-form'),
+    input: document.querySelector('input.form-control'),
+    button: document.querySelector('button.btn-primary'),
+    modal: {
+      title: document.querySelector('h5.modal-title'),
+      description: document.querySelector('div.modal-body'),
+      link: document.querySelector('a.full-article'),
+    },
+  };
+  return elements;
+};
+
 export {
-  inputValidate, parse, _differenceBy, _uniqueId, _truncate,
+  initElements, inputValidate, parse, _differenceBy, _uniqueId, _truncate,
 };

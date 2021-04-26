@@ -14,9 +14,6 @@ const renderFeedback = (elements, i18n, feedbackKey, feedbackClass) => {
   if (oldFeedbackEl) {
     oldFeedbackEl.remove();
   }
-  if (!feedbackKey) {
-    return;
-  }
   i18n((t) => {
     const textFeedback = t(feedbackKey);
     const feedbackEl = buildFeedbackElement(textFeedback, feedbackClass);
@@ -52,7 +49,7 @@ const renderInputMapping = {
 const renderInput = (elements, i18n, status) => {
   const render = renderInputMapping[status];
   if (!render) {
-    throw Error(`Unknown form status ${status}`);
+    throw Error(`Unexpected form status ${status}`);
   }
   render(elements, i18n);
 };
@@ -68,17 +65,17 @@ const renderFeeds = (elements, i18n, feeds) => {
   });
 };
 
-const renderPostEl = (t, post, status) => (`<li class="list-group-item d-flex justify-content-between align-items-start">
-  <a href="${post.link}" class="font-weight-${status === 'read' ? 'normal' : 'bold'}" data-id="${post.guid}" target="_blank">${post.title}</a>
+const renderPostEl = (t, post, isRead) => (`<li class="list-group-item d-flex justify-content-between align-items-start">
+  <a href="${post.link}" class="font-weight-${isRead ? 'normal' : 'bold'}" data-id="${post.guid}" target="_blank">${post.title}</a>
   <button type="button" data-id="${post.guid}" data-toggle="modal" data-target="#modal" class="btn btn-primary btn-sm">${t('preview')}</button></li>`);
 
 const renderPosts = (elements, i18n, state) => {
-  const { posts, uiState } = state;
+  const { posts, uiState: { readPosts } } = state;
   i18n((t) => {
     elements.postsBox.innerHTML = `<h2>${t('postsTitle')}</h2>
   <ul class="list-group">${posts.map((post) => {
-    const { status } = uiState.posts.get(post.guid);
-    return renderPostEl(t, post, status);
+    const isRead = readPosts.has(post.guid);
+    return renderPostEl(t, post, isRead);
   })
     .join('')}</ul>`;
   });
@@ -100,9 +97,10 @@ const renderModal = (elements, state) => {
 };
 
 const renderUiState = (state) => {
-  state.uiState.posts.forEach(({ status }, id) => {
-    const postEl = document.querySelector(`a[data-id="${id}"]`);
-    if (status === 'read') {
+  state.posts.forEach(({ guid }) => {
+    const postEl = document.querySelector(`a[data-id="${guid}"]`);
+    const isRead = state.uiState.readPosts.has(guid);
+    if (isRead) {
       postEl.classList.remove('font-weight-bold');
       postEl.classList.add('font-weight-normal');
     }
@@ -133,7 +131,8 @@ const initView = (state, elements, i18n) => {
     feeds: () => renderFeeds(elements, i18n, state.feeds),
     posts: () => renderPosts(elements, i18n, state),
     preview: () => renderModal(elements, state),
-    'uiState.posts': () => renderUiState(state),
+    error: () => console.log(state.error),
+    'uiState.readPosts': () => renderUiState(state),
   };
 
   const watched = onChange(state, (path) => {

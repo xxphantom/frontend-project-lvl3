@@ -23,13 +23,14 @@ const app = () => {
 
   const state = {
     preview: { postId: null },
-    form: { status: 'filling' },
+    form: { status: 'empty' },
     requestRSS: { status: null },
     feeds: [],
     posts: [],
     uiState: {
-      posts: new Map(),
+      readPosts: new Set(),
     },
+    error: null,
   };
 
   const watched = initView(state, elements, i18n);
@@ -44,7 +45,7 @@ const app = () => {
     if (tagName === 'BUTTON') {
       watched.preview = { postId: id };
     }
-    watched.uiState.posts.set(id, { status: 'read' });
+    watched.uiState.readPosts.add(id);
   };
 
   const formHandler = (e) => {

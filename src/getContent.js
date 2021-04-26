@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {
-  parse, _differenceBy, _uniqueId, _zip,
+  parse, _differenceBy, _uniqueId,
 } from './utils.js';
 
 const updateInterval = 5000;
@@ -18,9 +18,6 @@ const addFeedDataToState = (watched, parsedData, currentFeedId, url) => {
   }
   const newPostsWithFeedId = newPosts.map((post) => ({ ...post, currentFeedId }));
   watched.posts.unshift(...newPostsWithFeedId);
-  const uiStateForNewPosts = newPostsWithFeedId
-    .map(({ guid }) => ([guid, { status: 'unread' }]));
-  watched.uiState.posts = new Map([...watched.uiState.posts, ...uiStateForNewPosts]);
 };
 
 export const periodicUpdateContent = (watched) => {
@@ -28,19 +25,20 @@ export const periodicUpdateContent = (watched) => {
     axios.get(`${serverOrigins}${encodeURIComponent(url)}`)));
   Promise.allSettled(promises)
     .then((results) => {
-      const resultsWithFeedData = _zip(results, watched.feeds);
-      resultsWithFeedData.forEach(([result, { feedId }]) => {
+      results.forEach((result, i) => {
+        const { feedId } = watched.feeds[i];
         if (result.status === 'rejected') {
-          throw new Error(result.reason);
+          watched.error = result.reason;
         }
         if (result.status === 'fulfilled') {
-          const data = parse(result.value.data.contents);
+          const { contents } = result.value.data;
+          const data = parse(contents);
           addFeedDataToState(watched, data, feedId);
         }
       });
     })
     .catch((e) => {
-      console.log(e);
+      watched.error = e;
     })
     .finally(setTimeout(() => periodicUpdateContent(watched), updateInterval));
 };
@@ -59,6 +57,7 @@ export const getContent = (watched, url) => {
       watched.form = { status: 'empty' };
     })
     .catch((e) => {
+      watched.error = e;
       if (e.isAxiosError) {
         watched.requestRSS = { status: 'failed' };
         watched.form = { status: 'valid' };

@@ -41,23 +41,6 @@ const inputValidate = (url) => {
   }
 };
 
-const initElements = () => {
-  const elements = {
-    formBox: document.querySelector('div.col-md-8'),
-    feedsBox: document.querySelector('div.feeds'),
-    postsBox: document.querySelector('div.posts'),
-    form: document.querySelector('form.rss-form'),
-    input: document.querySelector('input.form-control'),
-    button: document.querySelector('button.btn-primary'),
-    modal: {
-      title: document.querySelector('h5.modal-title'),
-      description: document.querySelector('div.modal-body'),
-      link: document.querySelector('a.full-article'),
-    },
-  };
-  return elements;
-};
-
 export {
-  initElements, inputValidate, parse, _differenceBy, _uniqueId, _truncate,
+  inputValidate, parse, _differenceBy, _uniqueId, _truncate,
 };

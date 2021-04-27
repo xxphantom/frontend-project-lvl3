@@ -3,7 +3,24 @@ import 'bootstrap/js/dist/modal';
 import initView from './view.js';
 import localize from './localize';
 import { periodicUpdateContent, getContent } from './getContent.js';
-import { inputValidate, initElements } from './utils.js';
+import { inputValidate } from './utils.js';
+
+const initElements = () => {
+  const elements = {
+    formBox: document.querySelector('div.col-md-8'),
+    feedsBox: document.querySelector('div.feeds'),
+    postsBox: document.querySelector('div.posts'),
+    form: document.querySelector('form.rss-form'),
+    input: document.querySelector('input.form-control'),
+    button: document.querySelector('button.btn-primary'),
+    modal: {
+      title: document.querySelector('h5.modal-title'),
+      description: document.querySelector('div.modal-body'),
+      link: document.querySelector('a.full-article'),
+    },
+  };
+  return elements;
+};
 
 const postBoxHandler = ({ target }, watched) => {
   const { tagName, dataset: { id } } = target;

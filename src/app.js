@@ -1,9 +1,9 @@
 import 'bootstrap/js/dist/util';
 import 'bootstrap/js/dist/modal';
+import * as yup from 'yup';
 import initView from './view.js';
 import localize from './localize';
 import { periodicUpdateContent, getContent } from './getContent.js';
-import { inputValidate } from './utils.js';
 
 const initElements = () => {
   const elements = {
@@ -34,20 +34,23 @@ const postBoxHandler = ({ target }, watched) => {
   watched.uiState.readPosts.add(id);
 };
 
+const errCode = 'badURL';
+const schema = yup.string().required(errCode).trim().url(errCode);
+
 const formHandler = (e, watched, elements) => {
   e.preventDefault();
   const url = elements.input.value.trim();
-  const error = inputValidate(url);
-  if (error) {
-    watched.form = { status: 'notValid' };
+  try {
+    schema.validateSync(url);
+    const doubleFeed = watched.feeds.find((feed) => feed.url === url);
+    if (doubleFeed) {
+      throw new Error('addedAlready');
+    }
+  } catch (error) {
+    watched.form = { status: 'notValid', error };
     return;
   }
-  const doubleFeed = watched.feeds.find((feed) => feed.url === url);
-  if (doubleFeed) {
-    watched.requestRSS = { status: 'addedAlready' };
-    return;
-  }
-  watched.form = { status: 'blocked' };
+  watched.form = { status: 'blocked', error: null };
   getContent(watched, url);
 };
 
@@ -57,14 +60,19 @@ const app = () => {
 
   const state = {
     preview: { postId: null },
-    form: { status: 'empty' },
-    requestRSS: { status: null },
+    form: {
+      status: 'empty',
+      error: null,
+    },
+    requestRSS: {
+      status: 'idle',
+      error: null,
+    },
     feeds: [],
     posts: [],
     uiState: {
       readPosts: new Set(),
     },
-    error: null,
   };
 
   const watched = initView(state, elements, i18n);

@@ -22,11 +22,11 @@ const renderFeedback = (elements, i18n, feedbackKey, feedbackClass) => {
 };
 
 const renderInputMapping = {
-  notValid: (elements, i18n) => {
+  notValid: (elements, i18n, error) => {
     elements.input.classList.add('is-invalid');
     elements.input.removeAttribute('readonly');
     elements.button.removeAttribute('disabled');
-    renderFeedback(elements, i18n, 'errors.badURL', 'text-danger');
+    renderFeedback(elements, i18n, `errors.${error.message}`, 'text-danger');
   },
   blocked: (elements) => {
     elements.input.classList.remove('is-invalid');
@@ -46,12 +46,13 @@ const renderInputMapping = {
   },
 };
 
-const renderInput = (elements, i18n, status) => {
+const renderInput = (elements, i18n, state) => {
+  const { status, error } = state.form;
   const render = renderInputMapping[status];
   if (!render) {
     throw Error(`Unexpected form status ${status}`);
   }
-  render(elements, i18n);
+  render(elements, i18n, error);
 };
 
 const renderFeeds = (elements, i18n, feeds) => {
@@ -82,9 +83,10 @@ const renderPosts = (elements, i18n, state) => {
 };
 
 const renderModal = (elements, state) => {
+  const { modal } = elements;
   const { preview, posts } = state;
   const postData = posts.find((post) => post.guid === preview.postId);
-  elements.modal.title.textContent = postData.title;
+  modal.title.textContent = postData.title;
   const tempContainer = document.createElement('div');
   tempContainer.innerHTML = postData.description;
   const descriptionWithoutTags = tempContainer.textContent;
@@ -92,8 +94,8 @@ const renderModal = (elements, state) => {
     length: 500,
     separator: ' ',
   });
-  elements.modal.description.textContent = smallDescription;
-  elements.modal.link.setAttribute('href', postData.link);
+  modal.description.textContent = smallDescription;
+  modal.link.setAttribute('href', postData.link);
 };
 
 const renderUiState = (state) => {
@@ -107,31 +109,26 @@ const renderUiState = (state) => {
   });
 };
 
-const requestRenderParams = {
-  success: { i18nKey: 'feedback.success', className: 'text-success' },
-  failed: { i18nKey: 'errors.networkError', className: 'text-danger' },
-  parseFailed: { i18nKey: 'errors.parseError', className: 'text-danger' },
-  addedAlready: { i18nKey: 'errors.addedAlready', className: 'text-danger' },
-};
-
-const renderRequestRSS = (elements, i18n, status) => {
-  const { i18nKey, className } = requestRenderParams[status];
-  if (!requestRenderParams[status]) {
-    throw new Error(`Unknown requestRSS status: ${status}`);
+const renderRequestRSS = (elements, i18n, state) => {
+  const { status, error } = state.requestRSS;
+  if (status === 'success') {
+    renderFeedback(elements, i18n, 'feedback.success', 'text-success');
   }
-  renderFeedback(elements, i18n, i18nKey, className);
+  if (status === 'failed') {
+    const errCode = error.isAxiosError ? 'networkError' : error.message;
+    renderFeedback(elements, i18n, `errors.${errCode}`, 'text-danger');
+  }
 };
 
 const initView = (state, elements, i18n) => {
   localizeTemplate(i18n);
 
   const mapping = {
-    form: () => renderInput(elements, i18n, state.form.status),
-    requestRSS: () => renderRequestRSS(elements, i18n, state.requestRSS.status),
+    form: () => renderInput(elements, i18n, state),
+    requestRSS: () => renderRequestRSS(elements, i18n, state),
     feeds: () => renderFeeds(elements, i18n, state.feeds),
     posts: () => renderPosts(elements, i18n, state),
     preview: () => renderModal(elements, state),
-    error: () => console.log(state.error),
     'uiState.readPosts': () => renderUiState(state),
   };
 

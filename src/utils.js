@@ -1,4 +1,3 @@
-import * as yup from 'yup';
 import _truncate from 'lodash/truncate';
 import _differenceBy from 'lodash/differenceBy';
 import _uniqueId from 'lodash/uniqueId';
@@ -30,17 +29,6 @@ const parse = (xmlString) => {
   };
 };
 
-const errCode = 'badURL';
-const schema = yup.string().required(errCode).trim().url(errCode);
-const inputValidate = (url) => {
-  try {
-    schema.validateSync(url);
-    return null;
-  } catch (err) {
-    return err;
-  }
-};
-
 export {
-  inputValidate, parse, _differenceBy, _uniqueId, _truncate,
+  parse, _differenceBy, _uniqueId, _truncate,
 };

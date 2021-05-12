@@ -28,7 +28,7 @@ export const periodicUpdateContent = (watched) => {
       results.forEach((result, i) => {
         const { feedId } = watched.feeds[i];
         if (result.status === 'rejected') {
-          watched.error = result.reason;
+          throw result.reason;
         }
         if (result.status === 'fulfilled') {
           const { contents } = result.value.data;
@@ -36,9 +36,6 @@ export const periodicUpdateContent = (watched) => {
           addFeedDataToState(watched, data, feedId);
         }
       });
-    })
-    .catch((e) => {
-      watched.error = e;
     })
     .finally(setTimeout(() => periodicUpdateContent(watched), updateInterval));
 };
@@ -53,18 +50,11 @@ export const getContent = (watched, url) => {
       }
       const data = parse(response.data.contents);
       addFeedDataToState(watched, data, feedId, url);
-      watched.requestRSS = { status: 'success' };
-      watched.form = { status: 'empty' };
+      watched.requestRSS = { status: 'success', error: null };
+      watched.form = { status: 'empty', error: null };
     })
-    .catch((e) => {
-      watched.error = e;
-      if (e.isAxiosError) {
-        watched.requestRSS = { status: 'failed' };
-        watched.form = { status: 'valid' };
-      }
-      if (e.message === 'parseError') {
-        watched.requestRSS = { status: 'parseFailed' };
-        watched.form = { status: 'valid' };
-      }
+    .catch((error) => {
+      watched.requestRSS = { status: 'failed', error };
+      watched.form = { status: 'valid', error: null };
     });
 };

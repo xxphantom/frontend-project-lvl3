@@ -11,9 +11,7 @@ const translateHomePage = (i18n) => {
   };
   Object.entries(elements).forEach((element) => {
     const [key, [domEl, attribute]] = element;
-    i18n((t) => {
-      domEl[attribute] = t(key);
-    });
+    domEl[attribute] = i18n(key);
   });
 };
 

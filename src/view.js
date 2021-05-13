@@ -14,11 +14,9 @@ const renderFeedback = (elements, i18n, feedbackKey, feedbackClass) => {
   if (oldFeedbackEl) {
     oldFeedbackEl.remove();
   }
-  i18n((t) => {
-    const textFeedback = t(feedbackKey);
-    const feedbackEl = buildFeedbackElement(textFeedback, feedbackClass);
-    elements.formBox.append(feedbackEl);
-  });
+  const textFeedback = i18n(feedbackKey);
+  const feedbackEl = buildFeedbackElement(textFeedback, feedbackClass);
+  elements.formBox.append(feedbackEl);
 };
 
 const renderInputMapping = {
@@ -60,26 +58,22 @@ const renderFeeds = (elements, i18n, feeds) => {
   const feedsList = feeds
     .map(({ title, description }) => (`<li class='list-group-item'><h3>${title}</h3><p>${description}</p>`))
     .join('');
-  i18n((t) => {
-    elements.feedsBox.innerHTML = `<h2>${t('feedsTitle')}</h2>
-    <ul class='list-group mb-5'>${feedsList}</ul>`;
-  });
+  elements.feedsBox.innerHTML = `<h2>${i18n('feedsTitle')}</h2>
+      <ul class='list-group mb-5'>${feedsList}</ul>`;
 };
 
-const renderPostEl = (t, post, isRead) => (`<li class="list-group-item d-flex justify-content-between align-items-start">
+const renderPostEl = (i18n, post, isRead) => (`<li class="list-group-item d-flex justify-content-between align-items-start">
   <a href="${post.link}" class="font-weight-${isRead ? 'normal' : 'bold'}" data-id="${post.guid}" target="_blank">${post.title}</a>
-  <button type="button" data-id="${post.guid}" data-toggle="modal" data-target="#modal" class="btn btn-primary btn-sm">${t('preview')}</button></li>`);
+  <button type="button" data-id="${post.guid}" data-toggle="modal" data-target="#modal" class="btn btn-primary btn-sm">${i18n('preview')}</button></li>`);
 
 const renderPosts = (elements, i18n, state) => {
   const { posts, uiState: { readPosts } } = state;
-  i18n((t) => {
-    elements.postsBox.innerHTML = `<h2>${t('postsTitle')}</h2>
-  <ul class="list-group">${posts.map((post) => {
+  elements.postsBox.innerHTML = `<h2>${i18n('postsTitle')}</h2>
+<ul class="list-group">${posts.map((post) => {
     const isRead = readPosts.has(post.guid);
-    return renderPostEl(t, post, isRead);
+    return renderPostEl(i18n, post, isRead);
   })
     .join('')}</ul>`;
-  });
 };
 
 const renderModal = (elements, state) => {

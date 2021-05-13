@@ -20,12 +20,8 @@ const options = {
 
 const localize = () => {
   const i18nInstance = i18next.createInstance();
-  const promise = i18nInstance.use(LanguageDetector).init(options, (err) => {
-    if (err) {
-      throw Error('Something went wrong', err);
-    }
-  });
-  return (cb) => promise.then(cb);
+  const promise = i18nInstance.use(LanguageDetector).init(options);
+  return promise;
 };
 
 export default localize;

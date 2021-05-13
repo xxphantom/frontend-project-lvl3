@@ -55,30 +55,30 @@ const formHandler = (e, watched, elements) => {
 };
 
 const app = () => {
-  const i18n = localize();
-  const elements = initElements();
-
-  const state = {
-    preview: { postId: null },
-    form: {
-      status: 'empty',
-      error: null,
-    },
-    requestRSS: {
-      status: 'idle',
-      error: null,
-    },
-    feeds: [],
-    posts: [],
-    uiState: {
-      readPosts: new Set(),
-    },
-  };
-
-  const watched = initView(state, elements, i18n);
-  periodicUpdateContent(watched);
-  elements.postsBox.addEventListener('click', (e) => postBoxHandler(e, watched));
-  elements.form.addEventListener('submit', (e) => formHandler(e, watched, elements));
+  const i18next = localize();
+  i18next.then((t) => {
+    const elements = initElements();
+    const state = {
+      preview: { postId: null },
+      form: {
+        status: 'empty',
+        error: null,
+      },
+      requestRSS: {
+        status: 'idle',
+        error: null,
+      },
+      feeds: [],
+      posts: [],
+      uiState: {
+        readPosts: new Set(),
+      },
+    };
+    const watched = initView(state, elements, t);
+    periodicUpdateContent(watched);
+    elements.postsBox.addEventListener('click', (e) => postBoxHandler(e, watched));
+    elements.form.addEventListener('submit', (e) => formHandler(e, watched, elements));
+  });
 };
 
 export default app;

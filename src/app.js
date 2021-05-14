@@ -56,7 +56,7 @@ const formHandler = (e, watched, elements) => {
 
 const app = () => {
   const i18next = localize();
-  i18next.then((t) => {
+  const promise = i18next.then((t) => {
     const elements = initElements();
     const state = {
       preview: { postId: null },
@@ -79,6 +79,7 @@ const app = () => {
     elements.postsBox.addEventListener('click', (e) => postBoxHandler(e, watched));
     elements.form.addEventListener('submit', (e) => formHandler(e, watched, elements));
   });
+  return promise;
 };
 
 export default app;

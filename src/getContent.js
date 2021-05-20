@@ -7,13 +7,16 @@ const updateInterval = 5000;
 const serverOrigins = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=';
 
 const addFeedDataToState = (watched, parsedData, currentFeedId, url) => {
+  const { title, description, items } = parsedData;
   const newPosts = [];
   if (!url) {
     const oldPosts = watched.posts.filter((post) => post.feedId === currentFeedId);
-    newPosts.push(..._differenceBy(parsedData.posts, oldPosts, ({ guid }) => guid));
+    newPosts.push(..._differenceBy(items, oldPosts, ({ guid }) => guid));
   } else {
-    newPosts.push(...parsedData.posts);
-    const newFeedWithMeta = { url, currentFeedId, ...parsedData.feed };
+    newPosts.push(...items);
+    const newFeedWithMeta = {
+      url, currentFeedId, title, description,
+    };
     watched.feeds.unshift(newFeedWithMeta);
   }
   const newPostsWithFeedId = newPosts.map((post) => ({ ...post, currentFeedId }));

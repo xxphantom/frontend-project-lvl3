@@ -109,7 +109,14 @@ const renderRequestRSS = (elements, i18n, state) => {
     renderFeedback(elements, i18n, 'feedback.success', 'text-success');
   }
   if (status === 'failed') {
-    const errCode = error.isAxiosError ? 'networkError' : error.message;
+    let errCode;
+    if (error.isAxiosError) {
+      errCode = 'networkError';
+    } else if (error instanceof TypeError) {
+      errCode = 'parseError';
+    } else {
+      throw error;
+    }
     renderFeedback(elements, i18n, `errors.${errCode}`, 'text-danger');
   }
 };

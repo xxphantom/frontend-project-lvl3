@@ -18,15 +18,10 @@ const parse = (xmlString) => {
   const xmlParser = new DOMParser();
   const dom = xmlParser.parseFromString(xmlString, 'text/xml');
   const channelEl = dom.querySelector('channel');
-  const postsEls = [...dom.querySelectorAll('item')];
-  if (!channelEl) {
-    throw Error('parseError');
-  }
-  const feed = domEltoObj(channelEl);
-  const posts = postsEls.map(domEltoObj);
-  return {
-    feed, posts,
-  };
+  const itemsEls = [...dom.querySelectorAll('item')];
+  const { title, description } = domEltoObj(channelEl);
+  const items = itemsEls.map(domEltoObj);
+  return { title, description, items };
 };
 
 export {

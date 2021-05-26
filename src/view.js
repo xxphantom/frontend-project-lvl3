@@ -108,6 +108,9 @@ const renderUiState = (state) => {
 };
 
 const getErrType = (error) => {
+  if (!error) {
+    return null;
+  }
   switch (true) {
     case error.isParseError:
       return 'parseError';

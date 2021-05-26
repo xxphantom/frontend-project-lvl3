@@ -23,29 +23,28 @@ const initElements = () => {
 };
 
 const postBoxHandler = ({ target }, watched) => {
-  const { tagName, dataset: { id } } = target;
-  if (tagName !== 'A' && tagName !== 'BUTTON') {
+  const { tagName, dataset } = target;
+  if (!dataset.id) {
     return;
   }
-
+  const { id } = dataset;
   if (tagName === 'BUTTON') {
     watched.preview = { postId: id };
   }
   watched.uiState.readPosts.add(id);
 };
 
-const errCode = 'badURL';
-const schema = yup.string().required(errCode).trim().url(errCode);
-
-const formHandler = (e, watched, elements) => {
+const formHandler = (e, watched) => {
   e.preventDefault();
-  const url = elements.input.value.trim();
+  const formData = new FormData(e.target);
+  const url = formData.get('url').trim();
+
+  const errCode = 'badURL';
+  const { url: doubledURL } = watched.feeds.find((feed) => feed.url === url) ?? '';
+  const schema = yup.string().required(errCode).trim().url(errCode)
+    .notOneOf([doubledURL], 'addedAlready');
   try {
     schema.validateSync(url);
-    const doubleFeed = watched.feeds.find((feed) => feed.url === url);
-    if (doubleFeed) {
-      throw new Error('addedAlready');
-    }
   } catch (error) {
     watched.form = { status: 'notValid', error };
     return;

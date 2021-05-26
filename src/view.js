@@ -42,6 +42,10 @@ const renderInputMapping = {
     elements.input.removeAttribute('readonly');
     elements.button.removeAttribute('disabled');
   },
+  idle: (elements) => {
+    elements.input.removeAttribute('readonly');
+    elements.button.removeAttribute('disabled');
+  },
 };
 
 const renderInput = (elements, i18n, state) => {
@@ -103,18 +107,29 @@ const renderUiState = (state) => {
   });
 };
 
+const getErrType = (error) => {
+  switch (true) {
+    case error.isParseError:
+      return 'parseError';
+    case error.isAxiosError:
+      return 'networkError';
+    default:
+      return 'unknownError';
+  }
+};
+
 const renderRequestRSS = (elements, i18n, state) => {
   const { status, error } = state.requestRSS;
-  if (status === 'success') {
-    renderFeedback(elements, i18n, 'feedback.success', 'text-success');
-    return;
-  }
-  if (error.isAxiosError) {
-    renderFeedback(elements, i18n, 'errors.networkError', 'text-danger');
-  } else if (error instanceof TypeError) {
-    renderFeedback(elements, i18n, 'errors.parseError', 'text-danger');
-  } else {
-    throw error;
+  const errType = getErrType(error);
+  switch (status) {
+    case 'success':
+      renderFeedback(elements, i18n, 'feedback.success', 'text-success');
+      break;
+    case 'failed':
+      renderFeedback(elements, i18n, `errors.${errType}`, 'text-danger');
+      break;
+    default:
+      throw new Error(`Unknown status: ${errType}`);
   }
 };
 

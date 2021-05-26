@@ -4,9 +4,9 @@ import {
 } from './utils.js';
 
 const updateInterval = 5000;
-const serverOrigins = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=';
+const serverOrigins = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true';
 
-const addFeedDataToState = (watched, parsedData, currentFeedId, url) => {
+const addFeedDataToState = (watched, parsedData, currentFeedId, url = null) => {
   const { title, description, items } = parsedData;
   const newPosts = [];
   if (!url) {
@@ -24,8 +24,12 @@ const addFeedDataToState = (watched, parsedData, currentFeedId, url) => {
 };
 
 export const periodicUpdateContent = (watched) => {
-  const promises = watched.feeds.map(({ url }) => (
-    axios.get(`${serverOrigins}${encodeURIComponent(url)}`)));
+  const promises = watched.feeds.map(({ url }) => {
+    const queryURL = new URL(serverOrigins);
+    queryURL.searchParams.set('url', url);
+    return axios.get(queryURL.href);
+  });
+
   Promise.allSettled(promises)
     .then((results) => {
       results.forEach((result, i) => {
@@ -44,12 +48,15 @@ export const periodicUpdateContent = (watched) => {
 };
 
 export const getContent = (watched, url) => {
-  const queryURL = `${serverOrigins}${encodeURIComponent(url)}`;
-  axios.get(queryURL)
+  const queryURL = new URL(serverOrigins);
+  queryURL.searchParams.set('url', url);
+  axios.get(queryURL.href)
     .then((response) => {
       const feedId = _uniqueId();
       if (!response.data) {
-        throw new Error('parseError');
+        const error = new Error('Parse error: response.data empty');
+        error.isParseError = true;
+        throw error;
       }
       const data = parse(response.data.contents);
       addFeedDataToState(watched, data, feedId, url);
@@ -58,6 +65,6 @@ export const getContent = (watched, url) => {
     })
     .catch((error) => {
       watched.requestRSS = { status: 'failed', error };
-      watched.form = { status: 'valid', error: null };
+      watched.form = { status: 'idle', error: null };
     });
 };

@@ -15,13 +15,22 @@ const domEltoObj = (el) => {
 };
 
 const parse = (xmlString) => {
-  const xmlParser = new DOMParser();
-  const dom = xmlParser.parseFromString(xmlString, 'text/xml');
-  const channelEl = dom.querySelector('channel');
-  const itemsEls = [...dom.querySelectorAll('item')];
-  const { title, description } = domEltoObj(channelEl);
-  const items = itemsEls.map(domEltoObj);
-  return { title, description, items };
+  try {
+    const xmlParser = new DOMParser();
+    const dom = xmlParser.parseFromString(xmlString, 'text/xml');
+    const parseErrorEl = dom.querySelector('parsererror');
+    if (parseErrorEl) {
+      throw new Error(parseErrorEl.textContent);
+    }
+    const channelEl = dom.querySelector('channel');
+    const itemsEls = [...dom.querySelectorAll('item')];
+    const { title, description } = domEltoObj(channelEl);
+    const items = itemsEls.map(domEltoObj);
+    return { title, description, items };
+  } catch (err) {
+    err.isParseError = true;
+    throw err;
+  }
 };
 
 export {

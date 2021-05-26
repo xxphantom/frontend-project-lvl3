@@ -15,6 +15,7 @@ export default {
     addedAlready: 'This source has already been added to the feed list',
     parseError: 'The resource does not contain a valid RSS',
     networkError: 'Network error',
+    unknownError: 'Something went wrong',
   },
   feedback: {
     success: 'RSS loaded successfully',

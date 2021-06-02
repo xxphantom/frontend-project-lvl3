@@ -37,20 +37,18 @@ const postBoxHandler = ({ target }, watched) => {
 const formHandler = (e, watched) => {
   e.preventDefault();
   const formData = new FormData(e.target);
-  const url = formData.get('url').trim();
+  const inputURL = formData.get('url').trim();
 
   const errCode = 'badURL';
-  const { url: doubledURL } = watched.feeds.find((feed) => feed.url === url) ?? '';
   const schema = yup.string().required(errCode).trim().url(errCode)
-    .notOneOf([doubledURL], 'addedAlready');
+    .notOneOf(watched.feeds.map(({ url }) => url), 'addedAlready');
   try {
-    schema.validateSync(url);
+    schema.validateSync(inputURL);
   } catch (error) {
     watched.form = { status: 'notValid', error };
     return;
   }
-  watched.form = { status: 'blocked', error: null };
-  getContent(watched, url);
+  getContent(watched, inputURL);
 };
 
 const app = () => {

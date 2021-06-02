@@ -50,6 +50,7 @@ export const periodicUpdateContent = (watched) => {
 export const getContent = (watched, url) => {
   const queryURL = new URL(serverOrigins);
   queryURL.searchParams.set('url', url);
+  watched.form = { status: 'blocked', error: null };
   axios.get(queryURL.href)
     .then((response) => {
       const feedId = _uniqueId();

@@ -24,7 +24,7 @@ const parse = (xmlString) => {
     }
     const channelEl = dom.querySelector('channel');
     const itemsEls = [...dom.querySelectorAll('item')];
-    const { title, description } = domEltoObj(channelEl);
+    const { title, link, description = link } = domEltoObj(channelEl);
     const items = itemsEls.map(domEltoObj);
     return { title, description, items };
   } catch (err) {

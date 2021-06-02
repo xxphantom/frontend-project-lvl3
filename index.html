@@ -3,26 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
   <title>RSS агрегатор</title>
 </head>
 <body>
   <section class="container-fluid bg-dark p-5">
     <div class="row">
-      <div class="text-white mx-auto col-md-8">
+      <div class="col-md-10 col-lg-8 mx-auto text-white">
         <h1 class="display-4">RSS reader</h1>
         <p class="lead">Start reading RSS now! It's easy and very convenient</p>
-          <form class="rss-form">
-            <div class="form-row">
+          <form class="rss-form text-body">
+            <div class="row">
               <div class="col">
-                <input autofocus required name="url" aria-label="url" class="form-control form-control-lg" placeholder="RSS link">
+                <div class="form-floating">
+                <input autofocus required name="url" aria-label="url" class="form-control form-control-lg w-100">
+                <label for="url-input">RSS Link!</label>
+                </div>
               </div>
               <div class="col-auto">
-                <button type="submit" aria-label="add" class="btn btn-lg btn-primary px-5">Add</button>
+                <button type="submit" aria-label="add" class="btn btn-lg btn-primary px-sm-5 h-100">Add</button>
               </div>
             </div>
           </form>
-           <p class="text-muted my-1">Sample: https://habr.com/ru/rss/best/daily/</p>
+           <p class="mt-2 mb-0 text-muted">Sample: https://habr.com/ru/rss/best/daily/</p>
       </div>
     </div>
   </section>
@@ -34,21 +37,17 @@
      <div class="col-md-10 col-lg-8 mx-auto posts"></div>
    </div>
   </section>
- <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
+ <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="modalLabel"></h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-        ...
-      </div>
+      <div class="modal-body"></div>
       <div class="modal-footer">
       <a class="btn btn-primary full-article" href="#" role="button" target="_blank" rel="noopener noreferrer"></a>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal"></button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"></button>
       </div>
     </div>
   </div>

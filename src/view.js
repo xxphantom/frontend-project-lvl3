@@ -66,9 +66,9 @@ const renderFeeds = (elements, i18n, feeds) => {
       <ul class='list-group mb-5'>${feedsList}</ul>`;
 };
 
-const renderPostEl = (i18n, post, isRead) => (`<li class="list-group-item d-flex justify-content-between align-items-start">
-  <a href="${post.link}" class="font-weight-${isRead ? 'normal' : 'bold'}" data-id="${post.guid}" target="_blank">${post.title}</a>
-  <button type="button" data-id="${post.guid}" data-toggle="modal" data-target="#modal" class="btn btn-primary btn-sm">${i18n('preview')}</button></li>`);
+const renderPostEl = (i18n, post, isRead) => (`<li class="list-group-item d-flex justify-content-between align-items-center">
+  <a href="${post.link}" class="fw-${isRead ? 'normal' : 'bold'} text-decoration-none" data-id="${post.guid}" target="_blank">${post.title}</a>
+  <button type="button" data-id="${post.guid}" data-bs-toggle="modal" data-bs-target="#modal" class="btn btn-outline-primary btn-sm">${i18n('preview')}</button></li>`);
 
 const renderPosts = (elements, i18n, state) => {
   const { posts, uiState: { readPosts } } = state;
@@ -101,8 +101,8 @@ const renderUiState = (state) => {
     const postEl = document.querySelector(`a[data-id="${guid}"]`);
     const isRead = state.uiState.readPosts.has(guid);
     if (isRead) {
-      postEl.classList.remove('font-weight-bold');
-      postEl.classList.add('font-weight-normal');
+      postEl.classList.remove('fw-bold');
+      postEl.classList.add('fw-normal');
     }
   });
 };

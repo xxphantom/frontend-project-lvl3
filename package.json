@@ -23,7 +23,7 @@
   "main": "src/app.js",
   "dependencies": {
     "axios": "^0.21.1",
-    "bootstrap": "^4.6.0",
+    "bootstrap": "^5.0.1",
     "i18next": "^20.1.0",
     "i18next-browser-languagedetector": "^6.1.0",
     "jquery": "^3.5.1",

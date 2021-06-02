@@ -5,7 +5,7 @@ const translateHomePage = (i18n) => {
     tagline: [document.querySelector('p.lead'), 'textContent'],
     sample: [document.querySelector('p.text-muted'), 'textContent'],
     placeholder: [document.querySelector('input.form-control-lg'), 'placeholder'],
-    add: [document.querySelector('button.btn.btn-lg.btn-primary.px-5'), 'textContent'],
+    add: [document.querySelector('button.btn.btn-lg.btn-primary'), 'textContent'],
     read: [document.querySelector('a.full-article'), 'textContent'],
     close: [document.querySelector('button.btn.btn-secondary'), 'textContent'],
   };

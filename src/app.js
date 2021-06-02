@@ -1,4 +1,4 @@
-import 'bootstrap/js/dist/util';
+import 'bootstrap/js/dist/tooltip';
 import 'bootstrap/js/dist/modal';
 import * as yup from 'yup';
 import initView from './view.js';
@@ -7,7 +7,7 @@ import { periodicUpdateContent, getContent } from './getContent.js';
 
 const initElements = () => {
   const elements = {
-    formBox: document.querySelector('div.col-md-8'),
+    formBox: document.querySelector('div.col-md-10'),
     feedsBox: document.querySelector('div.feeds'),
     postsBox: document.querySelector('div.posts'),
     form: document.querySelector('form.rss-form'),

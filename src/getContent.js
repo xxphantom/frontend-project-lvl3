@@ -24,16 +24,20 @@ export const periodicUpdateContent = (watched, updateInterval = defaultInterval)
       results.forEach((result, i) => {
         const { feedId } = watched.feeds[i];
         if (result.status === 'rejected') {
-          throw result.reason;
+          console.error(result.reason);
         }
         if (result.status === 'fulfilled') {
           const { contents } = result.value.data;
-          const parsedData = parse(contents);
-          const { items } = parsedData;
-          const oldPosts = watched.posts.filter((post) => post.feedId === feedId);
-          const newPosts = _differenceBy(items, oldPosts, ({ guid }) => guid);
-          const newPostsWithFeedId = newPosts.map((post) => ({ ...post, feedId }));
-          watched.posts.unshift(...newPostsWithFeedId);
+          try {
+            const parsedData = parse(contents);
+            const { items } = parsedData;
+            const oldPosts = watched.posts.filter((post) => post.feedId === feedId);
+            const newPosts = _differenceBy(items, oldPosts, ({ guid }) => guid);
+            const newPostsWithFeedId = newPosts.map((post) => ({ ...post, feedId }));
+            watched.posts.unshift(...newPostsWithFeedId);
+          } catch (err) {
+            console.error(err);
+          }
         }
       });
     })

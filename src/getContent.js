@@ -1,6 +1,7 @@
 import axios from 'axios';
+import parse from './parser.js';
 import {
-  parse, _differenceBy, _uniqueId,
+  _differenceBy, _uniqueId,
 } from './utils.js';
 
 const updateInterval = 5000;

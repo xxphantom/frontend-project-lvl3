@@ -22,6 +22,19 @@ const initElements = () => {
   return elements;
 };
 
+const validateInput = (inputData, watched) => {
+  const errCode = 'badURL';
+  const schema = yup.string().required(errCode).trim().url(errCode)
+    .notOneOf(watched.feeds.map(({ url }) => url), 'addedAlready');
+  try {
+    schema.validateSync(inputData);
+    return null;
+  } catch (error) {
+    error.isValidation = true;
+    return error;
+  }
+};
+
 const postBoxHandler = ({ target }, watched) => {
   const { tagName, dataset } = target;
   if (!dataset.id) {
@@ -37,18 +50,14 @@ const postBoxHandler = ({ target }, watched) => {
 const formHandler = (e, watched) => {
   e.preventDefault();
   const formData = new FormData(e.target);
-  const inputURL = formData.get('url').trim();
-
-  const errCode = 'badURL';
-  const schema = yup.string().required(errCode).trim().url(errCode)
-    .notOneOf(watched.feeds.map(({ url }) => url), 'addedAlready');
-  try {
-    schema.validateSync(inputURL);
-  } catch (error) {
-    watched.form = { status: 'notValid', error };
+  const url = formData.get('url').trim();
+  const error = validateInput(url, watched);
+  if (error) {
+    watched.form = { status: 'invalid', error };
     return;
   }
-  getContent(watched, inputURL);
+  watched.form = { status: 'valid', error: null };
+  getContent(watched, url);
 };
 
 const app = () => {
@@ -58,7 +67,7 @@ const app = () => {
     const state = {
       preview: { postId: null },
       form: {
-        status: 'empty',
+        status: 'idle',
         error: null,
       },
       requestRSS: {

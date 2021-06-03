@@ -20,22 +20,11 @@ const renderFeedback = (elements, i18n, feedbackKey, feedbackClass) => {
 };
 
 const renderInputMapping = {
-  notValid: (elements, i18n, error) => {
+  invalid: (elements, i18n, error) => {
     elements.input.classList.add('is-invalid');
     elements.input.removeAttribute('readonly');
     elements.button.removeAttribute('disabled');
     renderFeedback(elements, i18n, `errors.${error.message}`, 'text-danger');
-  },
-  blocked: (elements) => {
-    elements.input.classList.remove('is-invalid');
-    elements.input.setAttribute('readonly', true);
-    elements.button.setAttribute('disabled', true);
-  },
-  empty: (elements) => {
-    elements.input.classList.remove('is-invalid');
-    elements.input.removeAttribute('readonly');
-    elements.button.removeAttribute('disabled');
-    elements.form.reset();
   },
   valid: (elements) => {
     elements.input.classList.remove('is-invalid');
@@ -43,6 +32,7 @@ const renderInputMapping = {
     elements.button.removeAttribute('disabled');
   },
   idle: (elements) => {
+    elements.input.classList.remove('is-invalid');
     elements.input.removeAttribute('readonly');
     elements.button.removeAttribute('disabled');
   },
@@ -125,10 +115,19 @@ const renderRequestRSS = (elements, i18n, state) => {
   const { status, error } = state.requestRSS;
   const errType = getErrType(error);
   switch (status) {
-    case 'success':
+    case 'finished':
+      elements.form.reset();
       renderFeedback(elements, i18n, 'feedback.success', 'text-success');
       break;
+    case 'requested':
+      elements.input.classList.remove('is-invalid');
+      elements.input.setAttribute('readonly', true);
+      elements.button.setAttribute('disabled', true);
+      break;
     case 'failed':
+      elements.input.classList.remove('is-invalid');
+      elements.input.removeAttribute('readonly');
+      elements.button.removeAttribute('disabled');
       renderFeedback(elements, i18n, `errors.${errType}`, 'text-danger');
       break;
     default:

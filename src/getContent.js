@@ -4,31 +4,19 @@ import {
   _differenceBy, _uniqueId,
 } from './utils.js';
 
-const updateInterval = 5000;
-const serverOrigins = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true';
+const defaultInterval = 5000;
+const proxyOrigins = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true';
 
-const addFeedDataToState = (watched, parsedData, currentFeedId, url = null) => {
-  const { title, description, items } = parsedData;
-  const newPosts = [];
-  if (!url) {
-    const oldPosts = watched.posts.filter((post) => post.feedId === currentFeedId);
-    newPosts.push(..._differenceBy(items, oldPosts, ({ guid }) => guid));
-  } else {
-    newPosts.push(...items);
-    const newFeedWithMeta = {
-      url, currentFeedId, title, description,
-    };
-    watched.feeds.unshift(newFeedWithMeta);
-  }
-  const newPostsWithFeedId = newPosts.map((post) => ({ ...post, currentFeedId }));
-  watched.posts.unshift(...newPostsWithFeedId);
+const getProxiedURL = (url, proxy) => {
+  const proxyURL = new URL(proxy);
+  proxyURL.searchParams.set('url', url);
+  return proxyURL.href;
 };
 
-export const periodicUpdateContent = (watched) => {
+export const periodicUpdateContent = (watched, updateInterval = defaultInterval) => {
   const promises = watched.feeds.map(({ url }) => {
-    const queryURL = new URL(serverOrigins);
-    queryURL.searchParams.set('url', url);
-    return axios.get(queryURL.href);
+    const queryURL = getProxiedURL(url, proxyOrigins);
+    return axios.get(queryURL);
   });
 
   Promise.allSettled(promises)
@@ -40,8 +28,12 @@ export const periodicUpdateContent = (watched) => {
         }
         if (result.status === 'fulfilled') {
           const { contents } = result.value.data;
-          const data = parse(contents);
-          addFeedDataToState(watched, data, feedId);
+          const parsedData = parse(contents);
+          const { items } = parsedData;
+          const oldPosts = watched.posts.filter((post) => post.feedId === feedId);
+          const newPosts = _differenceBy(items, oldPosts, ({ guid }) => guid);
+          const newPostsWithFeedId = newPosts.map((post) => ({ ...post, feedId }));
+          watched.posts.unshift(...newPostsWithFeedId);
         }
       });
     })
@@ -49,10 +41,9 @@ export const periodicUpdateContent = (watched) => {
 };
 
 export const getContent = (watched, url) => {
-  const queryURL = new URL(serverOrigins);
-  queryURL.searchParams.set('url', url);
-  watched.form = { status: 'blocked', error: null };
-  axios.get(queryURL.href)
+  const queryURL = getProxiedURL(url, proxyOrigins);
+  watched.requestRSS = { status: 'requested', error: null };
+  axios.get(queryURL)
     .then((response) => {
       const feedId = _uniqueId();
       if (!response.data) {
@@ -61,12 +52,17 @@ export const getContent = (watched, url) => {
         throw error;
       }
       const data = parse(response.data.contents);
-      addFeedDataToState(watched, data, feedId, url);
-      watched.requestRSS = { status: 'success', error: null };
-      watched.form = { status: 'empty', error: null };
+      const { title, description, items } = data;
+      const newFeedWithMeta = {
+        url, feedId, title, description,
+      };
+      watched.feeds.unshift(newFeedWithMeta);
+      const newPostsWithFeedId = items.map((post) => ({ ...post, feedId }));
+      watched.posts.unshift(...newPostsWithFeedId);
+      watched.requestRSS = { status: 'finished', error: null };
+      watched.form = { status: 'idle', error: null };
     })
     .catch((error) => {
       watched.requestRSS = { status: 'failed', error };
-      watched.form = { status: 'idle', error: null };
     });
 };

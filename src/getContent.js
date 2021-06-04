@@ -13,12 +13,19 @@ const getProxiedURL = (url, proxy) => {
   return proxyURL.href;
 };
 
+const addNewPostsInState = (watched, data, feedId) => {
+  const { items } = data;
+  const oldPosts = watched.posts.filter((post) => post.feedId === feedId);
+  const newPosts = _differenceBy(items, oldPosts, ({ guid }) => guid);
+  const newPostsWithFeedId = newPosts.map((post) => ({ ...post, feedId }));
+  watched.posts.unshift(...newPostsWithFeedId);
+};
+
 export const periodicUpdateContent = (watched, updateInterval = defaultInterval) => {
   const promises = watched.feeds.map(({ url }) => {
     const queryURL = getProxiedURL(url, proxyOrigins);
     return axios.get(queryURL);
   });
-
   Promise.allSettled(promises)
     .then((results) => {
       results.forEach((result, i) => {
@@ -29,12 +36,8 @@ export const periodicUpdateContent = (watched, updateInterval = defaultInterval)
         if (result.status === 'fulfilled') {
           const { contents } = result.value.data;
           try {
-            const parsedData = parse(contents);
-            const { items } = parsedData;
-            const oldPosts = watched.posts.filter((post) => post.feedId === feedId);
-            const newPosts = _differenceBy(items, oldPosts, ({ guid }) => guid);
-            const newPostsWithFeedId = newPosts.map((post) => ({ ...post, feedId }));
-            watched.posts.unshift(...newPostsWithFeedId);
+            const data = parse(contents);
+            addNewPostsInState(watched, data, feedId);
           } catch (err) {
             console.error(err);
           }
@@ -42,6 +45,16 @@ export const periodicUpdateContent = (watched, updateInterval = defaultInterval)
       });
     })
     .finally(setTimeout(() => periodicUpdateContent(watched), updateInterval));
+};
+
+const addFeedAndPostsInState = (watched, data, url, feedId) => {
+  const { title, description, items } = data;
+  const newFeedWithMeta = {
+    url, feedId, title, description,
+  };
+  watched.feeds.unshift(newFeedWithMeta);
+  const newPostsWithFeedId = items.map((post) => ({ ...post, feedId }));
+  watched.posts.unshift(...newPostsWithFeedId);
 };
 
 export const getContent = (watched, url) => {
@@ -56,13 +69,7 @@ export const getContent = (watched, url) => {
         throw error;
       }
       const data = parse(response.data.contents);
-      const { title, description, items } = data;
-      const newFeedWithMeta = {
-        url, feedId, title, description,
-      };
-      watched.feeds.unshift(newFeedWithMeta);
-      const newPostsWithFeedId = items.map((post) => ({ ...post, feedId }));
-      watched.posts.unshift(...newPostsWithFeedId);
+      addFeedAndPostsInState(watched, data, url, feedId);
       watched.requestRSS = { status: 'finished', error: null };
       watched.form = { status: 'idle', error: null };
     })

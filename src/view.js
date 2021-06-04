@@ -32,6 +32,7 @@ const renderInputMapping = {
     elements.button.removeAttribute('disabled');
   },
   idle: (elements) => {
+    elements.form.reset();
     elements.input.classList.remove('is-invalid');
     elements.input.removeAttribute('readonly');
     elements.button.removeAttribute('disabled');
@@ -116,7 +117,6 @@ const renderRequestRSS = (elements, i18n, state) => {
   const errType = getErrType(error);
   switch (status) {
     case 'finished':
-      elements.form.reset();
       renderFeedback(elements, i18n, 'feedback.success', 'text-success');
       break;
     case 'requested':

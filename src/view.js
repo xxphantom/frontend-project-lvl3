@@ -1,5 +1,5 @@
-import localizeTemplate from './localize/template.js';
 import onChange from 'on-change';
+import localizeTemplate from './localize/template.js';
 import render from './renderings.js';
 
 const initView = (state, elements, i18n) => {

@@ -1,77 +1,71 @@
 import axios from 'axios';
+import _differenceBy from 'lodash/differenceBy';
+import _uniqueId from 'lodash/uniqueId';
 import parse from './parser.js';
-import {
-  _differenceBy, _uniqueId,
-} from './utils.js';
 
-const defaultInterval = 5000;
-const proxyOrigins = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true';
-
-const getProxiedURL = (url, proxy) => {
-  const proxyURL = new URL(proxy);
+const getProxiedURL = (url) => {
+  const proxyURL = new URL('https://hexlet-allorigins.herokuapp.com/get?disableCache=true');
   proxyURL.searchParams.set('url', url);
   return proxyURL.href;
 };
 
-const addNewPostsInState = (watched, data, feedId) => {
-  const { items } = data;
+const updateFeed = (watched, feedData, feedId) => {
+  const { items } = feedData;
   const oldPosts = watched.posts.filter((post) => post.feedId === feedId);
   const newPosts = _differenceBy(items, oldPosts, ({ guid }) => guid);
   const newPostsWithFeedId = newPosts.map((post) => ({ ...post, feedId }));
   watched.posts.unshift(...newPostsWithFeedId);
 };
 
-export const periodicUpdateContent = (watched, updateInterval = defaultInterval) => {
+export const periodicUpdateContent = (watched, interval) => {
   const promises = watched.feeds.map(({ url }) => {
-    const queryURL = getProxiedURL(url, proxyOrigins);
+    const queryURL = getProxiedURL(url);
     return axios.get(queryURL);
   });
-  Promise.allSettled(promises)
-    .then((results) => {
-      results.forEach((result, i) => {
+  Promise.all(promises)
+    .then((responses) => {
+      responses.forEach((response, i) => {
         const { feedId } = watched.feeds[i];
-        if (result.status === 'rejected') {
-          console.error(result.reason);
-        }
-        if (result.status === 'fulfilled') {
-          const { contents } = result.value.data;
-          try {
-            const data = parse(contents);
-            addNewPostsInState(watched, data, feedId);
-          } catch (err) {
-            console.error(err);
-          }
+        if (!response.data) {
+          console.error('Parse error: response.data empty');
+        } else {
+          const { contents } = response.data;
+          const feedData = parse(contents);
+          updateFeed(watched, feedData, feedId);
         }
       });
     })
-    .finally(setTimeout(() => periodicUpdateContent(watched), updateInterval));
+    .finally(setTimeout(() => (
+      periodicUpdateContent(watched, interval)
+    ), interval));
 };
 
-const addFeedAndPostsInState = (watched, data, url, feedId) => {
-  const { title, description, items } = data;
+const addFeed = (watched, feedData, url) => {
+  const feedId = _uniqueId();
+  const { title, description } = feedData;
   const newFeedWithMeta = {
     url, feedId, title, description,
   };
   watched.feeds.unshift(newFeedWithMeta);
-  const newPostsWithFeedId = items.map((post) => ({ ...post, feedId }));
-  watched.posts.unshift(...newPostsWithFeedId);
+  updateFeed(watched, feedData, feedId);
 };
 
 export const getContent = (watched, url) => {
-  const queryURL = getProxiedURL(url, proxyOrigins);
+  const queryURL = getProxiedURL(url);
   watched.requestRSS = { status: 'requested', error: null };
   axios.get(queryURL)
     .then((response) => {
-      const feedId = _uniqueId();
       if (!response.data) {
         const error = new Error('Parse error: response.data empty');
         error.isParseError = true;
         throw error;
       }
-      const data = parse(response.data.contents);
-      addFeedAndPostsInState(watched, data, url, feedId);
+      const { contents } = response.data;
+      const feedData = parse(contents);
+      addFeed(watched, feedData, url);
       watched.requestRSS = { status: 'finished', error: null };
       watched.form = { status: 'idle', error: null };
+      watched.form2 = {};
     })
     .catch((error) => {
       watched.requestRSS = { status: 'failed', error };

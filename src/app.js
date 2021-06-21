@@ -5,6 +5,8 @@ import initView from './view.js';
 import localize from './localize';
 import { periodicUpdateContent, getContent } from './getContent.js';
 
+const updateInterval = 5000;
+
 const initElements = () => {
   const elements = {
     formBox: document.querySelector('div.col-md-10'),
@@ -81,7 +83,7 @@ const app = () => {
       },
     };
     const watched = initView(state, elements, t);
-    periodicUpdateContent(watched);
+    periodicUpdateContent(watched, updateInterval);
     elements.postsBox.addEventListener('click', (e) => postBoxHandler(e, watched));
     elements.form.addEventListener('submit', (e) => formHandler(e, watched, elements));
   });

@@ -1,10 +1,7 @@
 import onChange from 'on-change';
-import localizeTemplate from './localize/template.js';
 import render from './renderings.js';
 
 const initView = (state, elements, i18n) => {
-  localizeTemplate(i18n);
-
   const watched = onChange(state, (path) => {
     if (process.env.NODE_ENV === 'development') {
       console.log(`Path: ${path}:`);

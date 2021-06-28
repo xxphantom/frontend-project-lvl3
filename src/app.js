@@ -3,7 +3,7 @@ import 'bootstrap/js/dist/modal';
 import * as yup from 'yup';
 import initView from './view.js';
 import localize from './localize';
-import { periodicUpdateContent, getContent } from './getContent.js';
+import { periodicUpdateContent, getContent } from './requests.js';
 
 const updateInterval = 5000;
 

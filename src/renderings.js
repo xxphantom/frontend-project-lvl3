@@ -17,35 +17,6 @@ const renderFeedback = (elements, i18n, feedbackKey, feedbackClass) => {
   elements.formBox.append(feedbackEl);
 };
 
-const renderFormMapping = {
-  invalid: (elements, i18n, error) => {
-    elements.input.classList.add('is-invalid');
-    elements.input.removeAttribute('readonly');
-    elements.button.removeAttribute('disabled');
-    renderFeedback(elements, i18n, `errors.${error.message}`, 'text-danger');
-  },
-  valid: (elements) => {
-    elements.input.classList.remove('is-invalid');
-    elements.input.removeAttribute('readonly');
-    elements.button.removeAttribute('disabled');
-  },
-  idle: (elements) => {
-    elements.form.reset();
-    elements.input.classList.remove('is-invalid');
-    elements.input.removeAttribute('readonly');
-    elements.button.removeAttribute('disabled');
-  },
-};
-
-const renderForm = (elements, i18n, state) => {
-  const { status, error } = state.form;
-  const render = renderFormMapping[status];
-  if (!render) {
-    throw Error(`Unexpected form status ${status}`);
-  }
-  render(elements, i18n, error);
-};
-
 const renderFeeds = (elements, i18n, state) => {
   const { feeds } = state;
   elements.feedsBox.innerHTML = '';
@@ -128,46 +99,7 @@ const renderUiState = (state) => {
   });
 };
 
-const getErrType = (error) => {
-  if (!error) {
-    return null;
-  }
-  switch (true) {
-    case error.isParseError:
-      return 'parseError';
-    case error.isAxiosError:
-      return 'networkError';
-    default:
-      return 'unknownError';
-  }
-};
-
-const renderRequestStages = (elements, i18n, state) => {
-  const { status, error } = state.requestRSS;
-  const errType = getErrType(error);
-  switch (status) {
-    case 'finished':
-      renderFeedback(elements, i18n, 'feedback.success', 'text-success');
-      break;
-    case 'requested':
-      elements.input.classList.remove('is-invalid');
-      elements.input.setAttribute('readonly', true);
-      elements.button.setAttribute('disabled', true);
-      break;
-    case 'failed':
-      elements.input.classList.remove('is-invalid');
-      elements.input.removeAttribute('readonly');
-      elements.button.removeAttribute('disabled');
-      renderFeedback(elements, i18n, `errors.${errType}`, 'text-danger');
-      break;
-    default:
-      throw new Error(`Unknown status: ${errType}`);
-  }
-};
-
 const mapping = {
-  form: (state, elements, i18n) => renderForm(elements, i18n, state),
-  requestRSS: (state, elements, i18n) => renderRequestStages(elements, i18n, state),
   feeds: (state, elements, i18n) => renderFeeds(elements, i18n, state),
   posts: (state, elements, i18n) => renderPosts(elements, i18n, state),
   preview: (state, elements) => renderModal(elements, state),
@@ -182,4 +114,4 @@ const render = (state, path, elements, i18n) => {
   mapping[path](state, elements, i18n);
 };
 
-export default render;
+export { render, renderFeedback };

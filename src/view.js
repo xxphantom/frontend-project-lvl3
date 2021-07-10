@@ -1,5 +1,6 @@
 import onChange from 'on-change';
-import { render, renderFeedback } from './renderings.js';
+import _truncate from 'lodash/truncate';
+import * as render from './renderings.js';
 
 const getErrType = (error) => {
   if (!error) {
@@ -15,56 +16,69 @@ const getErrType = (error) => {
   }
 };
 
-const requestRSS = (elements, i18n, state) => {
-  const { status, error } = state.requestRSS;
-  const errType = getErrType(error);
-  switch (status) {
-    case 'finished':
-      renderFeedback(elements, i18n, 'feedback.success', 'text-success');
-      break;
-    case 'requested':
-      elements.input.classList.remove('is-invalid');
-      elements.input.setAttribute('readonly', true);
-      elements.button.setAttribute('disabled', true);
-      break;
-    case 'failed':
-      elements.input.classList.remove('is-invalid');
-      elements.input.removeAttribute('readonly');
-      elements.button.removeAttribute('disabled');
-      renderFeedback(elements, i18n, `errors.${errType}`, 'text-danger');
-      break;
-    default:
-      throw new Error(`Unknown status: ${errType}`);
+const requestStagesMapping = {
+  finished: (elements, i18n) => (
+    render.buildFeedback(elements, i18n, 'feedback.success', 'text-success')
+  ),
+  requested: (elements) => render.disableForm(elements),
+  failed: (elements, i18n, error) => {
+    render.enableForm(elements);
+    render.buildFeedback(elements, i18n, `errors.${getErrType(error)}`, 'text-danger');
+  },
+};
+
+const requestHandler = (elements, i18n, { status, error }) => {
+  const currentRequestStage = requestStagesMapping[status];
+  if (!currentRequestStage) {
+    throw new Error(`Unknown status: ${status}`);
   }
+  currentRequestStage(elements, i18n, error);
 };
 
 const inputMapping = {
   invalid: (elements, i18n, error) => {
-    elements.input.classList.add('is-invalid');
-    elements.input.removeAttribute('readonly');
-    elements.button.removeAttribute('disabled');
-    renderFeedback(elements, i18n, `errors.${error.message}`, 'text-danger');
+    render.enableForm(elements);
+    render.buildFeedback(elements, i18n, `errors.${error.message}`, 'text-danger');
   },
   valid: (elements) => {
-    elements.input.classList.remove('is-invalid');
-    elements.input.removeAttribute('readonly');
-    elements.button.removeAttribute('disabled');
+    render.enableForm(elements);
   },
   idle: (elements) => {
-    elements.form.reset();
-    elements.input.classList.remove('is-invalid');
-    elements.input.removeAttribute('readonly');
-    elements.button.removeAttribute('disabled');
+    render.resetForm(elements);
+    render.enableForm(elements);
   },
 };
 
-const currentInputStage = (elements, i18n, state) => {
-  const { status, error } = state.form;
+const inputHandler = (elements, i18n, form) => {
+  const { status, error } = form;
   const currentInput = inputMapping[status];
-  if (!render) {
+  if (!currentInput) {
     throw Error(`Unexpected form status ${status}`);
   }
   currentInput(elements, i18n, error);
+};
+
+const previewHandler = (elements, i18n, posts, preview) => {
+  const { postId } = preview;
+  const previewData = posts.find((post) => post.guid === postId);
+  const tempContainer = document.createElement('div');
+  tempContainer.innerHTML = previewData.description;
+  const descriptionWithoutTags = tempContainer.textContent;
+  const smallDescription = _truncate(descriptionWithoutTags, {
+    length: 500,
+    separator: ' ',
+  });
+  render.buildModalWindow(elements, { ...previewData, description: smallDescription });
+};
+
+const handlersMap = {
+  requestRSS: (elements, i18n, { requestRSS }) => requestHandler(elements, i18n, requestRSS),
+  form: (elements, i18n, { form }) => inputHandler(elements, i18n, form),
+  feeds: (elements, i18n, { feeds }) => render.buildFeedList(elements, i18n, feeds),
+  posts: (elements, i18n, { posts, uiState: { readPosts } }) => (
+    render.buildPosts(elements, i18n, posts, readPosts)),
+  preview: (elements, i18n, { posts, preview }) => previewHandler(elements, i18n, posts, preview),
+  'uiState.readPosts': (elements, i18n, { posts, uiState: { readPosts } }) => render.buildReadPosts(posts, readPosts),
 };
 
 const initView = (state, elements, i18n) => {
@@ -73,16 +87,12 @@ const initView = (state, elements, i18n) => {
       console.log(`Path: ${path}:`);
       console.dir(state);
     }
-    switch (path) {
-      case 'requestRSS':
-        requestRSS(elements, i18n, state);
-        break;
-      case 'form':
-        currentInputStage(elements, i18n, state);
-        break;
-      default:
-        render(state, path, elements, i18n);
+    const currentHandler = handlersMap[path];
+    if (!currentHandler) {
+      console.error(`Unknown path: ${path}`);
+      return;
     }
+    currentHandler(elements, i18n, state);
   });
   return watched;
 };

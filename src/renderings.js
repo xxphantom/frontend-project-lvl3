@@ -1,5 +1,3 @@
-import _truncate from 'lodash/truncate';
-
 const buildFeedbackElement = (textFeedback, feedbackClass) => {
   const divEl = document.createElement('div');
   divEl.classList.add('feedback', feedbackClass);
@@ -7,7 +5,7 @@ const buildFeedbackElement = (textFeedback, feedbackClass) => {
   return divEl;
 };
 
-const renderFeedback = (elements, i18n, feedbackKey, feedbackClass) => {
+export const buildFeedback = (elements, i18n, feedbackKey, feedbackClass) => {
   const oldFeedbackEl = document.querySelector('.feedback');
   if (oldFeedbackEl) {
     oldFeedbackEl.remove();
@@ -17,10 +15,25 @@ const renderFeedback = (elements, i18n, feedbackKey, feedbackClass) => {
   elements.formBox.append(feedbackEl);
 };
 
-const renderFeeds = (elements, i18n, state) => {
-  const { feeds } = state;
+export const disableForm = (elements) => {
+  elements.input.classList.remove('is-invalid');
+  elements.input.setAttribute('readonly', true);
+  elements.button.setAttribute('disabled', true);
+};
+
+export const enableForm = (elements) => {
+  elements.input.classList.remove('is-invalid');
+  elements.input.removeAttribute('readonly');
+  elements.button.removeAttribute('disabled');
+};
+
+export const resetForm = (elements) => {
+  elements.form.reset();
+};
+
+export const buildFeedList = (elements, i18n, feeds) => {
   elements.feedsBox.innerHTML = '';
-  const feedsList = feeds
+  const feedsEls = feeds
     .map(({ title, description }) => (`
       <li class='list-group-item'>
         <h3>${title}</h3>
@@ -32,11 +45,11 @@ const renderFeeds = (elements, i18n, state) => {
       ${i18n('feedsTitle')}
     </h2>
     <ul class='list-group mb-5'>
-      ${feedsList}
+      ${feedsEls}
     </ul>`);
 };
 
-const renderPostEl = (i18n, post, isRead) => (`
+const buildPostEl = (i18n, post, isRead) => (`
   <li class="list-group-item d-flex justify-content-between align-items-center">
     <a
       href="${post.link}"
@@ -59,59 +72,33 @@ const renderPostEl = (i18n, post, isRead) => (`
   </li>
   `);
 
-const renderPosts = (elements, i18n, state) => {
-  const { posts, uiState: { readPosts } } = state;
+export const buildPosts = (elements, i18n, posts, readPosts) => {
   const isRead = (guid) => readPosts.has(guid);
   elements.postsBox.innerHTML = (`
     <h2>
       ${i18n('postsTitle')}
     </h2>
     <ul class="list-group">
-      ${posts.map((post) => renderPostEl(i18n, post, isRead(post.guid))).join('')}
+      ${posts.map((post) => buildPostEl(i18n, post, isRead(post.guid))).join('')}
     </ul>
     `);
 };
 
-const renderModal = (elements, state) => {
+export const buildModalWindow = (elements, postData) => {
   const { modal } = elements;
-  const { preview, posts } = state;
-  const postData = posts.find((post) => post.guid === preview.postId);
-  modal.title.textContent = postData.title;
-  const tempContainer = document.createElement('div');
-  tempContainer.innerHTML = postData.description;
-  const descriptionWithoutTags = tempContainer.textContent;
-  const smallDescription = _truncate(descriptionWithoutTags, {
-    length: 500,
-    separator: ' ',
-  });
-  modal.description.textContent = smallDescription;
-  modal.link.setAttribute('href', postData.link);
+  const { title, description, link } = postData;
+  modal.title.textContent = title;
+  modal.description.textContent = description;
+  modal.link.setAttribute('href', link);
 };
 
-const renderUiState = (state) => {
-  state.posts.forEach(({ guid }) => {
-    const postEl = document.querySelector(`a[data-id="${guid}"]`);
-    const isRead = state.uiState.readPosts.has(guid);
+export const buildReadPosts = (posts, readPosts) => {
+  posts.forEach(({ guid }) => {
+    const postDomEl = document.querySelector(`a[data-id="${guid}"]`);
+    const isRead = readPosts.has(guid);
     if (isRead) {
-      postEl.classList.remove('fw-bold');
-      postEl.classList.add('fw-normal');
+      postDomEl.classList.remove('fw-bold');
+      postDomEl.classList.add('fw-normal');
     }
   });
 };
-
-const mapping = {
-  feeds: (state, elements, i18n) => renderFeeds(elements, i18n, state),
-  posts: (state, elements, i18n) => renderPosts(elements, i18n, state),
-  preview: (state, elements) => renderModal(elements, state),
-  'uiState.readPosts': (state) => renderUiState(state),
-};
-
-const render = (state, path, elements, i18n) => {
-  if (!mapping[path]) {
-    console.error(`Unknown state path: ${path}`);
-    return;
-  }
-  mapping[path](state, elements, i18n);
-};
-
-export { render, renderFeedback };

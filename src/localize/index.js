@@ -2,10 +2,11 @@ import i18next from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import en from '../locales/en.js';
 import ru from '../locales/ru.js';
+import config from '../config.js';
 
 const options = {
-  debug: process.env.NODE_ENV !== 'production',
-  lng: process.env.NODE_ENV === 'test' ? 'ru' : null,
+  debug: config.mode !== 'production',
+  lng: config.mode === 'test' ? 'ru' : null,
   fallbackLng: 'en',
   initImmediate: false,
   resources: {

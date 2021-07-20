@@ -91,14 +91,3 @@ export const buildModalWindow = (elements, postData) => {
   modal.description.textContent = description;
   modal.link.setAttribute('href', link);
 };
-
-export const buildReadPosts = (posts, readPosts) => {
-  posts.forEach(({ guid }) => {
-    const postDomEl = document.querySelector(`a[data-id="${guid}"]`);
-    const isRead = readPosts.has(guid);
-    if (isRead) {
-      postDomEl.classList.remove('fw-bold');
-      postDomEl.classList.add('fw-normal');
-    }
-  });
-};

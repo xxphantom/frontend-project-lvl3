@@ -1,6 +1,7 @@
 import onChange from 'on-change';
 import _truncate from 'lodash/truncate';
 import * as render from './renderings.js';
+import config from './config.js';
 
 const getErrType = (error) => {
   if (!error) {
@@ -78,12 +79,14 @@ const handlersMap = {
   posts: (elements, i18n, { posts, uiState: { readPosts } }) => (
     render.buildPosts(elements, i18n, posts, readPosts)),
   preview: (elements, i18n, { posts, preview }) => previewHandler(elements, i18n, posts, preview),
-  'uiState.readPosts': (elements, i18n, { posts, uiState: { readPosts } }) => render.buildReadPosts(posts, readPosts),
+  'uiState.readPosts': (elements, i18n, { posts, uiState: { readPosts } }) => (
+    render.buildPosts(elements, i18n, posts, readPosts)),
+
 };
 
 const initView = (state, elements, i18n) => {
   const watched = onChange(state, (path) => {
-    if (process.env.NODE_ENV === 'development') {
+    if (config.mode === 'development') {
       console.log(`Path: ${path}:`);
       console.dir(state);
     }

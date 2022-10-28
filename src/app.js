@@ -11,7 +11,7 @@ import localize from './localize';
 const updateInterval = 5000;
 
 const getProxiedURL = (url) => {
-  const requestURL = new URL('/get', 'https://hexlet-allorigins.herokuapp.com');
+  const requestURL = new URL('/get', 'https://allorigins.hexlet.app');
   requestURL.searchParams.set('disableCache', true);
   requestURL.searchParams.set('url', url);
   return requestURL.href;
